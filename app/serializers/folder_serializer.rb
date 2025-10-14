@@ -8,9 +8,9 @@ class FolderSerializer
       id: @folder.id,
       name: @folder.name,
       description: @folder.description,
-      imageIds: @folder.image_ids_array,
-      coverImage: @folder.cover_image,
-      createdAt: @folder.created_at&.iso8601
+      image_ids: @folder.image_ids_array,
+      cover_image: @folder.cover_image,
+      created_at: @folder.created_at&.iso8601
     }
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_14_162554) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_14_165310) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -98,7 +98,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_14_162554) do
     t.index ["user_id"], name: "index_folders_on_user_id"
   end
 
-  create_table "galleries", id: { type: :string, limit: 16 }, force: :cascade do |t|
+  create_table "galleries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "filename", null: false
     t.string "url", null: false
     t.string "public_id", null: false

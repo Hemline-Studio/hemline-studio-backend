@@ -36,12 +36,15 @@ Rails.application.routes.draw do
       # Custom field routes
       resources :custom_fields
 
-      # Folder routes
-      resources :folders do
-        member do
-          post :add_image          # POST /api/v1/folders/:id/add_image
-          delete :remove_images    # DELETE /api/v1/folders/:id/remove_images
-          patch :set_cover_image   # PATCH /api/v1/folders/:id/set_cover_image
+      # Gallery routes
+      namespace :gallery do
+        # Folder routes
+        resources :folders do
+          member do
+            post :add_image          # POST /api/v1/gallery/folders/:id/add_image
+            delete :remove_images    # DELETE /api/v1/gallery/folders/:id/remove_images
+            patch :set_cover_image   # PATCH /api/v1/gallery/folders/:id/set_cover_image
+          end
         end
       end
 

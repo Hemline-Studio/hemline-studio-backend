@@ -2,7 +2,7 @@
 #
 # Table name: galleries
 #
-#  id          :string           not null, primary key (16-character UUID)
+#  id          :uuid             not null, primary key
 #  filename    :string           not null
 #  url         :string           not null
 #  public_id   :string           not null
@@ -19,9 +19,6 @@ class Gallery < ApplicationRecord
   validates :filename, presence: true
   validates :url, presence: true, format: { with: URI::DEFAULT_PARSER.make_regexp([ "http", "https" ]), message: "must be a valid URL" }
   validates :public_id, presence: true, uniqueness: { scope: :user_id }
-
-  # Callbacks
-  before_create :generate_uuid
 
   # Instance methods
   def folder_ids_array
@@ -63,11 +60,5 @@ class Gallery < ApplicationRecord
 
   def self.without_folders
     where(folder_ids: [])
-  end
-
-  private
-
-  def generate_uuid
-    self.id = SecureRandom.hex(8) # Generates a 16-character hexadecimal string
   end
 end

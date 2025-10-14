@@ -6,11 +6,11 @@ class GallerySerializer
   def as_json
     {
       id: @gallery.id,
-      filename: @gallery.filename,
+      file_name: @gallery.filename,
       url: @gallery.url,
       public_id: @gallery.public_id,
-      folderIds: @gallery.folder_ids_array,
-      createdAt: @gallery.created_at&.iso8601
+      folder_ids: @gallery.folder_ids_array,
+      created_at: @gallery.created_at&.iso8601
     }
   end
 

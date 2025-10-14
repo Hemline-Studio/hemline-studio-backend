@@ -1,8 +1,8 @@
-class Api::V1::FoldersController < Api::V1::BaseController
+class Api::V1::Gallery::FoldersController < Api::V1::BaseController
   before_action :authenticate_user!
-  before_action :set_folder, only: [ :show, :destroy, :add_image, :remove_images, :set_cover_image ]
+  before_action :set_folder, only: [ :show, :update, :destroy, :add_image, :remove_images, :set_cover_image ]
 
-  # GET /api/v1/folders
+  # GET /api/v1/gallery/folders
   def index
     per_page = [ params[:per_page]&.to_i || 10, 50 ].min
     folders = current_user.folders.order(created_at: :desc)
@@ -20,7 +20,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
     }, status: :ok
   end
 
-  # GET /api/v1/folders/:id
+  # GET /api/v1/gallery/folders/:id
   def show
     per_page = [ params[:per_page]&.to_i || 10, 50 ].min
     images = @folder.images.order(created_at: :desc)
@@ -37,14 +37,41 @@ class Api::V1::FoldersController < Api::V1::BaseController
     }, status: :ok
   end
 
-  # POST /api/v1/folders
+  # POST /api/v1/gallery/folders
   def create
+    unless params[:folder].present?
+      render json: {
+        message: "Folder parameters are required",
+        errors: [ "folder parameter is required" ]
+      }, status: :bad_request
+      return
+    end
+
     folder = current_user.folders.build(folder_params)
 
     if folder.save
+      # Add images to folder if image_ids are provided
+      if params[:image_ids].present? && params[:image_ids].is_a?(Array)
+        image_ids = params[:image_ids]
+
+        # Validate that all images belong to the current user
+        images = Gallery.where(id: image_ids, user: current_user)
+
+        if images.count == image_ids.length
+          # Add images to folder and folder to images
+          ActiveRecord::Base.transaction do
+            folder.add_images(image_ids)
+
+            images.each do |image|
+              image.add_to_folder(folder.id)
+            end
+          end
+        end
+      end
+
       render json: {
         message: "Folder created successfully",
-        data: FolderSerializer.new(folder).as_json
+        data: FolderSerializer.new(folder.reload).as_json
       }, status: :created
     else
       render json: {
@@ -52,14 +79,51 @@ class Api::V1::FoldersController < Api::V1::BaseController
         errors: folder.errors.full_messages
       }, status: :unprocessable_entity
     end
+  rescue ActionController::ParameterMissing => e
+    render json: {
+      message: "Required parameter missing",
+      errors: [ e.message ]
+    }, status: :bad_request
   end
 
-  # PATCH/PUT /api/v1/folders/:id
+  # PATCH/PUT /api/v1/gallery/folders/:id
   def update
+    unless params[:folder].present?
+      render json: {
+        message: "Folder parameters are required",
+        errors: [ "folder parameter is required" ]
+      }, status: :bad_request
+      return
+    end
+
     if @folder.update(folder_params)
+      # Update cover image if provided
+      if params[:cover_image].present?
+        cover_image_id = params[:cover_image]
+
+        # Validate that the image belongs to the current user
+        image = Gallery.find_by(id: cover_image_id, user: current_user)
+
+        if image && @folder.has_image?(cover_image_id)
+          @folder.update(cover_image: cover_image_id)
+        elsif image && !@folder.has_image?(cover_image_id)
+          render json: {
+            message: "Image is not in this folder",
+            errors: [ "Cover image must be one of the images in the folder" ]
+          }, status: :bad_request
+          return
+        elsif !image
+          render json: {
+            message: "Image not found or doesn't belong to you",
+            errors: [ "Invalid cover image ID provided" ]
+          }, status: :not_found
+          return
+        end
+      end
+
       render json: {
         message: "Folder updated successfully",
-        data: FolderSerializer.new(@folder).as_json
+        data: FolderSerializer.new(@folder.reload).as_json
       }, status: :ok
     else
       render json: {
@@ -67,9 +131,14 @@ class Api::V1::FoldersController < Api::V1::BaseController
         errors: @folder.errors.full_messages
       }, status: :unprocessable_entity
     end
+  rescue ActionController::ParameterMissing => e
+    render json: {
+      message: "Required parameter missing",
+      errors: [ e.message ]
+    }, status: :bad_request
   end
 
-  # DELETE /api/v1/folders/:id
+  # DELETE /api/v1/gallery/folders/:id
   def destroy
     # Remove folder reference from all images in this folder
     Gallery.where(user: current_user)
@@ -84,7 +153,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
     }, status: :ok
   end
 
-  # POST /api/v1/folders/:id/add_image
+  # POST /api/v1/gallery/folders/:id/add_image
   def add_image
     image_ids = params[:image_ids]
     folder_ids = params[:folder_ids] || [ @folder.id ]
@@ -143,7 +212,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
     }, status: :ok
   end
 
-  # DELETE /api/v1/folders/:id/remove_images
+  # DELETE /api/v1/gallery/folders/:id/remove_images
   def remove_images
     image_ids = params[:image_ids]
 
@@ -180,7 +249,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
     }, status: :ok
   end
 
-  # PATCH /api/v1/folders/:id/set_cover_image
+  # PATCH /api/v1/gallery/folders/:id/set_cover_image
   def set_cover_image
     image_id = params[:image_id]
 
@@ -234,6 +303,7 @@ class Api::V1::FoldersController < Api::V1::BaseController
         message: "Folder not found",
         errors: [ "Folder with ID #{params[:id]} not found" ]
       }, status: :not_found
+      false  # This stops the before_action chain
     end
   end
 
