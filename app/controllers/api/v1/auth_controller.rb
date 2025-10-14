@@ -91,7 +91,7 @@ class Api::V1::AuthController < ApplicationController
     render json: {
       message: "User data retrieved successfully",
       success: true,
-      data: { user: user_data() }
+      data: { user: user_data(), token: @token }
     }
   end
 

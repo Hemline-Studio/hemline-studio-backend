@@ -48,6 +48,7 @@ module UserDataConcern
       return
     end
 
+    @token = token
     @current_user = result[:user] # This is jsut like a middleware in nodejs so that the current_user can be accessed once initialized in the HTTP request
   end
 end
