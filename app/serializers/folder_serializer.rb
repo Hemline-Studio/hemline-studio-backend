@@ -10,7 +10,8 @@ class FolderSerializer
       description: @folder.description,
       image_ids: @folder.image_ids_array,
       cover_image: @folder.cover_image,
-      created_at: @folder.created_at&.iso8601
+      created_at: @folder.created_at&.iso8601,
+      folder_color: @folder.folder_color
     }
   end
 

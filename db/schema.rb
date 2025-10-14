@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_14_165310) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_14_181428) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -93,9 +93,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_14_165310) do
     t.uuid "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "folder_color", default: -> { "(floor(((random() * (9)::double precision) + (1)::double precision)))::integer" }, null: false
     t.index ["image_ids"], name: "index_folders_on_image_ids", using: :gin
     t.index ["user_id", "name"], name: "index_folders_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_folders_on_user_id"
+    t.check_constraint "folder_color >= 1 AND folder_color <= 9", name: "folder_color_range"
   end
 
   create_table "galleries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

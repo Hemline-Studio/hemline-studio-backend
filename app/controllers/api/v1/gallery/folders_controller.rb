@@ -308,6 +308,6 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
   end
 
   def folder_params
-    params.require(:folder).permit(:name, :description)
+    params.require(:folder).permit(:name, :description, :folder_color)
   end
 end

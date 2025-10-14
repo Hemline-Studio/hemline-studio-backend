@@ -2,14 +2,15 @@
 #
 # Table name: folders
 #
-#  id           :uuid             not null, primary key
-#  name         :string           not null
-#  description  :text
-#  image_ids    :text             default([]), array
-#  cover_image  :string
-#  user_id      :uuid             not null
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
+#  id            :uuid             not null, primary key
+#  name          :string           not null
+#  description   :text
+#  image_ids     :text             default([]), array
+#  cover_image   :string
+#  folder_color  :integer          not null, default: random(1-9)
+#  user_id       :uuid             not null
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
 #
 
 class Folder < ApplicationRecord
@@ -18,9 +19,11 @@ class Folder < ApplicationRecord
   # Validations
   validates :name, presence: true, uniqueness: { scope: :user_id }
   validates :cover_image, inclusion: { in: ->(folder) { folder.image_ids_array } }, allow_blank: true
+  validates :folder_color, presence: true, inclusion: { in: 1..9, message: "must be between 1 and 9" }
 
   # Callbacks
   before_save :ensure_cover_image_in_images
+  before_validation :set_default_folder_color, on: :create
 
   # Instance methods
   def image_ids_array
@@ -100,5 +103,9 @@ class Folder < ApplicationRecord
     if cover_image.present? && !image_ids_array.include?(cover_image)
       self.cover_image = nil
     end
+  end
+
+  def set_default_folder_color
+    self.folder_color ||= rand(1..9)
   end
 end
