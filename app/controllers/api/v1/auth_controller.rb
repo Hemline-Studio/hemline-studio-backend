@@ -55,8 +55,8 @@ class Api::V1::AuthController < ApplicationController
 
       render json: {
         message: result[:message],
-        token: result[:token],
-        user: user_data(result[:user])
+        success: true,
+        data: { user: user_data(result[:user]), token: result[:token] }
       }
     else
       render json: { error: result[:message] }, status: :unprocessable_entity
@@ -78,8 +78,8 @@ class Api::V1::AuthController < ApplicationController
 
       render json: {
         message: result[:message],
-        token: result[:token],
-        user: user_data(result[:user])
+        success: true,
+        data: { user: user_data(result[:user]), token: result[:token] }
       }
     else
       render json: { error: result[:message] }, status: :unprocessable_entity
@@ -89,7 +89,9 @@ class Api::V1::AuthController < ApplicationController
   # GET /api/v1/auth/profile
   def profile
     render json: {
-      user: user_data()
+      message: "User data retrieved successfully",
+      success: true,
+      data: { user: user_data() }
     }
   end
 
