@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_24_105527) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_14_162554) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -85,6 +85,33 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_24_105527) do
     t.index ["user_id"], name: "index_custom_fields_on_user_id"
   end
 
+  create_table "folders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.text "image_ids", default: [], array: true
+    t.string "cover_image"
+    t.uuid "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["image_ids"], name: "index_folders_on_image_ids", using: :gin
+    t.index ["user_id", "name"], name: "index_folders_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_folders_on_user_id"
+  end
+
+  create_table "galleries", id: { type: :string, limit: 16 }, force: :cascade do |t|
+    t.string "filename", null: false
+    t.string "url", null: false
+    t.string "public_id", null: false
+    t.text "folder_ids", default: [], array: true
+    t.uuid "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["folder_ids"], name: "index_galleries_on_folder_ids", using: :gin
+    t.index ["public_id"], name: "index_galleries_on_public_id"
+    t.index ["user_id", "public_id"], name: "index_galleries_on_user_id_and_public_id", unique: true
+    t.index ["user_id"], name: "index_galleries_on_user_id"
+  end
+
   create_table "tokens", force: :cascade do |t|
     t.string "token", null: false
     t.datetime "expires_at"
@@ -117,5 +144,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_24_105527) do
   add_foreign_key "client_custom_field_values", "custom_fields"
   add_foreign_key "clients", "users"
   add_foreign_key "custom_fields", "users"
+  add_foreign_key "folders", "users"
+  add_foreign_key "galleries", "users"
   add_foreign_key "tokens", "users"
 end
