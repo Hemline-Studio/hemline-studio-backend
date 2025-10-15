@@ -21,8 +21,10 @@ default: &default
 
 development:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
   database: tailor_app_development
+  url: <%= ENV['DATABASE_URL'] %>
+  username: adetunjiadeyinka
+  password: <%= ENV["TAILOR_APP_DATABASE_PASSWORD"] %>
 
   # The specified database role being used to connect to PostgreSQL.
   # To create additional roles in PostgreSQL see `$ createuser --help`.

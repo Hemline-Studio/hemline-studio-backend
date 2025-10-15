@@ -41,7 +41,8 @@ Rails.application.routes.draw do
         # Gallery images routes
         resources :galleries, only: [ :index, :show, :update ] do
           collection do
-            delete :destroy  # DELETE /api/v1/gallery/galleries → GalleriesController#destroy (bulk delete)
+            post :upload         # POST /api/v1/gallery/galleries/upload
+            delete :destroy      # DELETE /api/v1/gallery/galleries → GalleriesController#destroy (bulk delete)
           end
         end
 

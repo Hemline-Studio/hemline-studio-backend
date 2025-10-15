@@ -2,6 +2,87 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
   before_action :authenticate_user!
   before_action :set_gallery, only: [ :show, :update ]
 
+  # POST /api/v1/gallery/galleries/upload
+  def upload
+    unless params[:images].present?
+      render json: {
+        message: "No images provided",
+        errors: [ "images parameter is required" ]
+      }, status: :bad_request
+      return
+    end
+
+    images = params[:images]
+
+    # Ensure images is an array
+    images = [ images ] unless images.is_a?(Array)
+
+    # Validate max 10 images
+    if images.length > 10
+      render json: {
+        message: "Too many images",
+        errors: [ "Maximum 10 images allowed per upload" ]
+      }, status: :bad_request
+      return
+    end
+
+    uploaded_images = []
+    failed_uploads = []
+
+    images.each_with_index do |image, index|
+      begin
+        # Upload to Cloudinary with compression, WebP format, and max 350px
+        result = Cloudinary::Uploader.upload(
+          image.tempfile,
+          folder: "tailor_app/gallery/#{current_user.id}",
+          resource_type: :image,
+          transformation: [
+            {
+              quality: "auto:good", # Auto optimize quality
+              fetch_format: "webp"  # Convert to WebP
+            }
+          ]
+        )
+
+        # Create gallery record
+        gallery = current_user.galleries.create!(
+          file_name: image.original_filename,
+          url: result["secure_url"],
+          public_id: result["public_id"],
+          description: params[:descriptions]&.dig(index) || ""
+        )
+
+        uploaded_images << GallerySerializer.new(gallery).as_json
+      rescue StandardError => e
+        failed_uploads << {
+          filename: image.original_filename,
+          error: e.message
+        }
+      end
+    end
+
+    if failed_uploads.empty?
+      render json: {
+        message: "Images uploaded successfully",
+        data: uploaded_images,
+        count: uploaded_images.length
+      }, status: :created
+    elsif uploaded_images.empty?
+      render json: {
+        message: "All uploads failed",
+        errors: failed_uploads
+      }, status: :unprocessable_entity
+    else
+      render json: {
+        message: "Some images uploaded successfully",
+        data: uploaded_images,
+        errors: failed_uploads,
+        successCount: uploaded_images.length,
+        failedCount: failed_uploads.length
+      }, status: :multi_status
+    end
+  end
+
   # GET /api/v1/gallery/galleries
   def index
     per_page = [ params[:per_page]&.to_i || 10, 50 ].min
@@ -88,7 +169,15 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
             folder.remove_image(image.id)
           end
 
-          # Delete the image
+          # Delete from Cloudinary
+          begin
+            Cloudinary::Uploader.destroy(image.public_id) if image.public_id.present?
+          rescue StandardError => e
+            Rails.logger.error "Failed to delete image from Cloudinary: #{e.message}"
+            # Continue with database deletion even if Cloudinary deletion fails
+          end
+
+          # Delete the image from database
           image.destroy
         end
       end
@@ -105,6 +194,14 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
 
         folders.each do |folder|
           folder.remove_image(@gallery.id)
+        end
+
+        # Delete from Cloudinary
+        begin
+          Cloudinary::Uploader.destroy(@gallery.public_id) if @gallery.public_id.present?
+        rescue StandardError => e
+          Rails.logger.error "Failed to delete image from Cloudinary: #{e.message}"
+          # Continue with database deletion even if Cloudinary deletion fails
         end
 
         @gallery.destroy
