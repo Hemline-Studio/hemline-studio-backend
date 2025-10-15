@@ -6,7 +6,8 @@ class GallerySerializer
   def as_json
     {
       id: @gallery.id,
-      file_name: @gallery.filename,
+      file_name: @gallery.file_name,
+      description: @gallery.description,
       url: @gallery.url,
       public_id: @gallery.public_id,
       folder_ids: @gallery.folder_ids_array,

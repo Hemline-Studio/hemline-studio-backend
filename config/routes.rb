@@ -38,6 +38,16 @@ Rails.application.routes.draw do
 
       # Gallery routes
       namespace :gallery do
+        # Gallery images routes
+        resources :galleries, only: [ :index, :show, :update ] do
+          collection do
+            delete :destroy  # DELETE /api/v1/gallery/galleries → GalleriesController#destroy (bulk delete)
+          end
+        end
+
+        # Single image delete
+        delete "galleries/:id", to: "galleries#destroy"  # DELETE /api/v1/gallery/galleries/:id
+
         # Folder routes
         resources :folders do
           member do

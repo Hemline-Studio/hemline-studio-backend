@@ -97,52 +97,52 @@ user.galleries.destroy_all
 # Create sample gallery images with UUID format (auto-generated)
 gallery_data = [
   {
-    filename: 'portrait-1.jpg',
+    file_name: 'portrait-1.jpg',
     url: 'https://placehold.co/800x1000/3b82f6/ffffff?text=Portrait+1',
     public_id: 'tailor_app/portrait_1'
   },
   {
-    filename: 'fabric-sample-1.jpg',
+    file_name: 'fabric-sample-1.jpg',
     url: 'https://placehold.co/600x600/ef4444/ffffff?text=Fabric+Sample',
     public_id: 'tailor_app/fabric_sample_1'
   },
   {
-    filename: 'garment-front.jpg',
+    file_name: 'garment-front.jpg',
     url: 'https://placehold.co/800x1200/10b981/ffffff?text=Garment+Front',
     public_id: 'tailor_app/garment_front'
   },
   {
-    filename: 'garment-back.jpg',
+    file_name: 'garment-back.jpg',
     url: 'https://placehold.co/800x1200/f59e0b/ffffff?text=Garment+Back',
     public_id: 'tailor_app/garment_back'
   },
   {
-    filename: 'measurement-guide.jpg',
+    file_name: 'measurement-guide.jpg',
     url: 'https://placehold.co/1000x800/8b5cf6/ffffff?text=Measurement+Guide',
     public_id: 'tailor_app/measurement_guide'
   },
   {
-    filename: 'design-sketch.jpg',
+    file_name: 'design-sketch.jpg',
     url: 'https://placehold.co/600x800/ec4899/ffffff?text=Design+Sketch',
     public_id: 'tailor_app/design_sketch'
   },
   {
-    filename: 'fabric-texture-1.jpg',
+    file_name: 'fabric-texture-1.jpg',
     url: 'https://placehold.co/800x800/06b6d4/ffffff?text=Fabric+Texture',
     public_id: 'tailor_app/fabric_texture_1'
   },
   {
-    filename: 'completed-suit.jpg',
+    file_name: 'completed-suit.jpg',
     url: 'https://placehold.co/800x1000/84cc16/ffffff?text=Completed+Suit',
     public_id: 'tailor_app/completed_suit'
   },
   {
-    filename: 'detail-shot.jpg',
+    file_name: 'detail-shot.jpg',
     url: 'https://placehold.co/600x600/f97316/ffffff?text=Detail+Shot',
     public_id: 'tailor_app/detail_shot'
   },
   {
-    filename: 'client-photo.jpg',
+    file_name: 'client-photo.jpg',
     url: 'https://placehold.co/800x800/6366f1/ffffff?text=Client+Photo',
     public_id: 'tailor_app/client_photo'
   }
@@ -150,7 +150,7 @@ gallery_data = [
 
 gallery_data.each do |image_attrs|
   Gallery.create!(
-    filename: image_attrs[:filename],
+    file_name: image_attrs[:file_name],
     url: image_attrs[:url],
     public_id: image_attrs[:public_id],
     user: user

@@ -3,9 +3,10 @@
 # Table name: galleries
 #
 #  id          :uuid             not null, primary key
-#  filename    :string           not null
+#  file_name   :string           not null
 #  url         :string           not null
 #  public_id   :string           not null
+#  description :text
 #  folder_ids  :text             default([]), array
 #  user_id     :uuid             not null
 #  created_at  :datetime         not null
@@ -16,7 +17,7 @@ class Gallery < ApplicationRecord
   belongs_to :user
 
   # Validations
-  validates :filename, presence: true
+  validates :file_name, presence: true
   validates :url, presence: true, format: { with: URI::DEFAULT_PARSER.make_regexp([ "http", "https" ]), message: "must be a valid URL" }
   validates :public_id, presence: true, uniqueness: { scope: :user_id }
 
