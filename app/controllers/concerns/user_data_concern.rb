@@ -29,7 +29,9 @@ module UserDataConcern
       has_onboarded: target_user.has_onboarded,
       created_at: target_user.created_at,
       updated_at: target_user.updated_at,
-      custom_fields: serialized_custom_fields
+      custom_fields: serialized_custom_fields,
+      total_folders: target_user.folders.count,
+      total_gallery_images: target_user.galleries.count
     }
   end
 
