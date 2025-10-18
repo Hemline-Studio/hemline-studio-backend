@@ -62,6 +62,8 @@ Rails.application.routes.draw do
       # User routes
       patch "users/profile", to: "users#update"
       put "users/profile", to: "users#update"
+      patch "users/business_image", to: "users#update_business_image"
+      put "users/business_image", to: "users#update_business_image"
 
       # Catch-all route for API endpoints not found
       match "*path", to: "application#not_found", via: :all

@@ -25,6 +25,7 @@ module UserDataConcern
       profession: target_user.profession,
       business_name: target_user.business_name,
       business_address: target_user.business_address,
+      business_image: target_user.business_image,
       skills: target_user.skills || [],
       has_onboarded: target_user.has_onboarded,
       created_at: target_user.created_at,

@@ -2,7 +2,7 @@ class Api::V1::UsersController < Api::V1::BaseController
   include UserDataConcern
 
   before_action :authenticate_user!
-  before_action :set_user, only: [ :update ]
+  before_action :set_user, only: [ :update, :update_business_image ]
 
   # PATCH/PUT /api/v1/users/profile
   def update
@@ -17,6 +17,69 @@ class Api::V1::UsersController < Api::V1::BaseController
         success: false,
         errors: @user.errors.full_messages,
         message: "Failed to update user"
+      }, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH/PUT /api/v1/users/business_image
+  def update_business_image
+    unless params[:image].present?
+      render json: {
+        success: false,
+        message: "No image provided",
+        errors: [ "image parameter is required" ]
+      }, status: :bad_request
+      return
+    end
+
+    begin
+      # Delete old image from Cloudinary if exists
+      if @user.business_image_public_id.present?
+        begin
+          Cloudinary::Uploader.destroy(@user.business_image_public_id)
+        rescue StandardError => e
+          Rails.logger.error "Failed to delete old business image from Cloudinary: #{e.message}"
+        end
+      end
+
+      # Upload new image to Cloudinary
+      result = Cloudinary::Uploader.upload(
+        params[:image].tempfile,
+        folder: "tailor_app/business_images/#{@user.id}",
+        resource_type: :image,
+        transformation: [
+          {
+            width: 500,
+            height: 500,
+            crop: "limit",
+            quality: "auto:good",
+            fetch_format: "webp"
+          }
+        ]
+      )
+
+      # Update user with new image details
+      if @user.update(
+        business_image: result["secure_url"],
+        business_image_public_id: result["public_id"]
+      )
+        render json: {
+          success: true,
+          data: user_data(@user),
+          message: "Business image updated successfully"
+        }
+      else
+        render json: {
+          success: false,
+          errors: @user.errors.full_messages,
+          message: "Failed to update business image"
+        }, status: :unprocessable_entity
+      end
+    rescue StandardError => e
+      render json: {
+        success: false,
+        message: "Failed to upload image",
+        errors: [ e.message ]
       }, status: :unprocessable_entity
     end
   end

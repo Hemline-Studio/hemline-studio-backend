@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_15_084750) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_18_165422) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -136,6 +136,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_15_084750) do
     t.string "business_name"
     t.text "business_address"
     t.string "skills", default: [], array: true
+    t.string "business_image"
+    t.string "business_image_public_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["has_onboarded"], name: "index_users_on_has_onboarded"
     t.index ["profession"], name: "index_users_on_profession"
