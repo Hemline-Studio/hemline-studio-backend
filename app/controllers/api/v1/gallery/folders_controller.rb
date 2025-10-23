@@ -31,8 +31,10 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
     images_data = result[:data].map { |image| GallerySerializer.new(image).as_json }
 
     render json: {
-      folder: folder_data,
-      images: images_data,
+      data: {
+        folder: folder_data,
+        images: images_data
+      },
       pagination: result[:pagination]
     }, status: :ok
   end
