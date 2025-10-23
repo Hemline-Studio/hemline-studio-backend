@@ -21,9 +21,9 @@ default: &default
 
 development:
   <<: *default
-  database: tailor_app_development
   url: <%= ENV['DATABASE_URL'] %>
-  username: adetunjiadeyinka
+  database: <%= ENV["DATABASE_NAME"] %>
+  username: <%= ENV["DATABASE_USERNAME"] %>
   password: <%= ENV["TAILOR_APP_DATABASE_PASSWORD"] %>
 
   # The specified database role being used to connect to PostgreSQL.
@@ -85,8 +85,8 @@ production:
   primary: &primary_production
     <<: *default
     url: <%= ENV['DATABASE_URL'] %>
-    database: tailor_app_database
-    username: tailor_app_database_user
+    database: <%= ENV["DATABASE_NAME"] %>
+    username: <%= ENV["DATABASE_USERNAME"] %>
     password: <%= ENV["TAILOR_APP_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production

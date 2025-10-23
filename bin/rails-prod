@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Load environment variables from .env file and run Rails in production mode
+
+set -a
+source .env
+set +a
+
+RAILS_ENV=production exec rails server "$@"
