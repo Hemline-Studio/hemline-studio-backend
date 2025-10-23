@@ -41,15 +41,32 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
               quality: "auto:good", # Auto optimize quality
               fetch_format: "webp"  # Convert to WebP
             }
-          ]
+          ],
+          exif: true # Request EXIF metadata
         )
+
+        # Extract metadata from Cloudinary result
+        metadata = {
+          width: result["width"],
+          height: result["height"],
+          aperture: result.dig("exif", "ApertureValue"),
+          camera_model: result.dig("exif", "Model"),
+          shutter_speed: result.dig("exif", "ShutterSpeedValue"),
+          iso: result.dig("exif", "ISO")
+        }
 
         # Create gallery record
         gallery = current_user.galleries.create!(
           file_name: image.original_filename,
           url: result["secure_url"],
           public_id: result["public_id"],
-          description: params[:descriptions]&.dig(index) || ""
+          description: params[:descriptions]&.dig(index) || "",
+          width: metadata[:width],
+          height: metadata[:height],
+          aperture: metadata[:aperture],
+          camera_model: metadata[:camera_model],
+          shutter_speed: metadata[:shutter_speed],
+          iso: metadata[:iso]
         )
 
         uploaded_images << GallerySerializer.new(gallery).as_json
@@ -105,7 +122,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
   def show
     render json: {
       message: "Gallery image retrieved successfully",
-      data: GallerySerializer.new(@gallery).as_json
+      data: GallerySerializer.new(@gallery).as_json(context: :detailed)
     }, status: :ok
   end
 
@@ -122,7 +139,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
     if @gallery.update(gallery_params)
       render json: {
         message: "Gallery image updated successfully",
-        data: GallerySerializer.new(@gallery.reload).as_json
+        data: GallerySerializer.new(@gallery.reload).as_json(context: :detailed)
       }, status: :ok
     else
       render json: {

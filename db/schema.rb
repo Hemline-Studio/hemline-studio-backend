@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_18_165422) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_23_061015) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -109,6 +109,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_18_165422) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "description"
+    t.integer "width"
+    t.integer "height"
+    t.string "aperture"
+    t.string "camera_model"
+    t.string "shutter_speed"
+    t.integer "iso"
     t.index ["folder_ids"], name: "index_galleries_on_folder_ids", using: :gin
     t.index ["public_id"], name: "index_galleries_on_public_id"
     t.index ["user_id", "public_id"], name: "index_galleries_on_user_id_and_public_id", unique: true
