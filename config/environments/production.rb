@@ -85,7 +85,7 @@ Rails.application.configure do
     "tailor-app-3a7i.onrender.com",  # Your backend domain
     /.*\.onrender\.com/               # Allow other Render domains
   ]
-  
+
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
