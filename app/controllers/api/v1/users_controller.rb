@@ -6,7 +6,19 @@ class Api::V1::UsersController < Api::V1::BaseController
 
   # PATCH/PUT /api/v1/users/profile
   def update
+    # Store the old onboarding status before updating
+    was_not_onboarded = @user.has_onboarded == false
+
     if @user.update(user_update_params)
+      # Check if user just completed onboarding
+      if was_not_onboarded && @user.has_onboarded == true
+        # Send welcome email
+        begin
+          EmailService.send_welcome_email(@user, request.base_url)
+        rescue StandardError => e
+          Rails.logger.error "Failed to send welcome email: #{e.message}"
+        end
+      end
       render json: {
         success: true,
         data: user_data(@user),

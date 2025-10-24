@@ -27,7 +27,7 @@ class EmailService
       user_name: display_name,
       auth_code: auth_code.code,
       magic_link: magic_link,
-      expiry_minutes: 30,
+      expiry_minutes: 15,
       title: "Hemline Auth - Magic Link"
     }
 
@@ -53,6 +53,43 @@ class EmailService
     {
       success: false,
       message: "Failed to send email: #{e.message}"
+    }
+  end
+
+  def self.send_welcome_email(user, base_url = "http://localhost:3000")
+    # Fallback greeting when first/last name may be blank
+    display_name = if user.first_name.present? || user.last_name.present?
+      user.full_name.strip
+    else
+      user.email
+    end
+
+    # Prepare template data
+    template_data = {
+      user_name: display_name,
+      title: "Hemline - Welcome Email"
+    }
+
+    # Send email with HTML template
+    send_email(
+      to: user.email,
+      subject: "Welcome to Hemline 🎉",
+      template: :welcome_email,
+      data: template_data
+    )
+
+    # Return success
+    {
+      success: true,
+      message: "Welcome email sent successfully 🎉"
+    }
+  rescue StandardError => e
+    Rails.logger.error "Welcome email sending failed: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+
+    {
+      success: false,
+      message: "Failed to send welcome email: #{e.message}"
     }
   end
 
