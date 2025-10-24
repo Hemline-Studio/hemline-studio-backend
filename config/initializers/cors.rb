@@ -7,11 +7,25 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins "*" # In production, replace with your frontend domains
+    # Allow specific origins based on environment
+    if Rails.env.production?
+      origins "https://hemline-frontend.vercel.app", 
+              "https://hemline.app",
+              /https:\/\/.*\.vercel\.app$/  # Allow all Vercel preview deployments
+    else
+      # In development, allow localhost with different ports
+      origins "http://localhost:3000",
+              "http://localhost:3001", 
+              "http://localhost:5173",
+              "http://127.0.0.1:3000",
+              "http://127.0.0.1:3001",
+              "http://127.0.0.1:5173"
+    end
     
     resource "*",
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      credentials: true,
       expose: ['Authorization']
   end
 end

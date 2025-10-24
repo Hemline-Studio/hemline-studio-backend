@@ -300,7 +300,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
     # Handle is_public parameter
     if params.key?(:is_public)
       is_public = params[:is_public]
-      
+
       if is_public.to_s == "true" || is_public == true
         @folder.make_public! unless @folder.is_public?
       elsif is_public.to_s == "false" || is_public == false
@@ -422,7 +422,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     when "link"
       message = @folder.is_public? ? "Public link generated successfully" : "Folder link retrieved (folder is private)"
-      
+
       render json: {
         message: message,
         data: {
