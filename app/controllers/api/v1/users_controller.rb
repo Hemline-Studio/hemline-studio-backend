@@ -14,7 +14,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       if was_not_onboarded && @user.has_onboarded == true
         # Send welcome email
         begin
-          EmailService.send_welcome_email(@user, request.base_url)
+          EmailService.send_welcome_email(@user)
         rescue StandardError => e
           Rails.logger.error "Failed to send welcome email: #{e.message}"
         end

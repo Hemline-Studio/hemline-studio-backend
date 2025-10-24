@@ -55,9 +55,14 @@ Rails.application.routes.draw do
             post :add_image          # POST /api/v1/gallery/folders/:id/add_image
             delete :remove_images    # DELETE /api/v1/gallery/folders/:id/remove_images
             patch :set_cover_image   # PATCH /api/v1/gallery/folders/:id/set_cover_image
+            post :share              # POST /api/v1/gallery/folders/:id/share
           end
         end
       end
+
+      # Public folder routes (no authentication required)
+      get "public/folders/:public_id", to: "public_folders#show"
+      get "public/folders/:public_id/images", to: "public_folders#images"
 
       # User routes
       patch "users/profile", to: "users#update"

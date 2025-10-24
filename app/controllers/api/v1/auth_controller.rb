@@ -23,8 +23,7 @@ class Api::V1::AuthController < ApplicationController
     # Send magic link email
     email_result = EmailService.send_magic_link(
       result[:user],
-      result[:auth_code],
-      request.base_url
+      result[:auth_code]
     )
 
     render json: {

@@ -12,7 +12,8 @@ class EmailService
     enable_starttls_auto: true
   }.freeze
 
-  def self.send_magic_link(user, auth_code, base_url = "http://localhost:3000")
+  def self.send_magic_link(user, auth_code, base_url = nil)
+    base_url ||= ENV["CLIENT_BASE_URL"] || "http://localhost:3000"
     magic_link = auth_code.magic_link(base_url)
 
     # Fallback greeting when first/last name may be blank
@@ -56,7 +57,8 @@ class EmailService
     }
   end
 
-  def self.send_welcome_email(user, base_url = "http://localhost:3000")
+  def self.send_welcome_email(user, base_url = nil)
+    base_url ||= ENV["CLIENT_BASE_URL"] || "http://localhost:3000"
     # Fallback greeting when first/last name may be blank
     display_name = if user.first_name.present? || user.last_name.present?
       user.full_name.strip
@@ -90,6 +92,49 @@ class EmailService
     {
       success: false,
       message: "Failed to send welcome email: #{e.message}"
+    }
+  end
+
+  def self.send_folder_share_email(to:, folder:, user:, recipient_name: nil, base_url: nil)
+    base_url ||= ENV["CLIENT_BASE_URL"] || "http://localhost:3000"
+    # Prepare sender name
+    sender_name = if user.first_name.present? || user.last_name.present?
+      user.full_name.strip
+    else
+      user.email
+    end
+
+    # Prepare template data
+    template_data = {
+      recipient_name: recipient_name,
+      sender_name: sender_name,
+      sender_business: user.business_name,
+      folder_name: folder.name,
+      folder_description: folder.description,
+      folder_url: folder.public_url(base_url),
+      image_count: folder.image_count
+    }
+
+    # Send email with HTML template
+    send_email(
+      to: to,
+      subject: "#{sender_name} shared a folder with you 📁",
+      template: :folder_share,
+      data: template_data
+    )
+
+    # Return success
+    {
+      success: true,
+      message: "Folder share email sent successfully"
+    }
+  rescue StandardError => e
+    Rails.logger.error "Folder share email sending failed: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+
+    {
+      success: false,
+      message: "Failed to send folder share email: #{e.message}"
     }
   end
 
