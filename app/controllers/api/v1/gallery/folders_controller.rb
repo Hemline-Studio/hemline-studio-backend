@@ -297,9 +297,20 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
   # POST /api/v1/gallery/folders/:id/share
   def share
-    # Ensure folder is public
-    unless @folder.is_public?
-      @folder.make_public!
+    # Handle is_public parameter
+    if params.key?(:is_public)
+      is_public = params[:is_public]
+      
+      if is_public.to_s == "true" || is_public == true
+        @folder.make_public! unless @folder.is_public?
+      elsif is_public.to_s == "false" || is_public == false
+        @folder.make_private! if @folder.is_public?
+      end
+    else
+      # Default behavior: ensure folder is public when sharing
+      unless @folder.is_public?
+        @folder.make_public!
+      end
     end
 
     share_type = params[:share_type] # 'email', 'client', or 'link'
@@ -329,8 +340,9 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
         render json: {
           message: "Folder shared successfully via email",
           data: {
-            public_url: @folder.public_url(base_url),
-            public_id: @folder.public_id
+            public_url: @folder.is_public? ? @folder.public_url(base_url) : nil,
+            public_id: @folder.public_id,
+            is_public: @folder.is_public?
           }
         }, status: :ok
       rescue StandardError => e
@@ -369,8 +381,9 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
           message: "Client does not have an email address",
           errors: [ "Cannot share via email: client has no email" ],
           data: {
-            public_url: @folder.public_url(base_url),
-            public_id: @folder.public_id
+            public_url: @folder.is_public? ? @folder.public_url(base_url) : nil,
+            public_id: @folder.public_id,
+            is_public: @folder.is_public?
           }
         }, status: :ok
         return
@@ -389,8 +402,9 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
         render json: {
           message: "Folder shared successfully with client",
           data: {
-            public_url: @folder.public_url(base_url),
+            public_url: @folder.is_public? ? @folder.public_url(base_url) : nil,
             public_id: @folder.public_id,
+            is_public: @folder.is_public?,
             client: {
               id: client.id,
               name: client.name,
@@ -407,11 +421,14 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       end
 
     when "link"
+      message = @folder.is_public? ? "Public link generated successfully" : "Folder link retrieved (folder is private)"
+      
       render json: {
-        message: "Public link generated successfully",
+        message: message,
         data: {
-          public_url: @folder.public_url(base_url),
-          public_id: @folder.public_id
+          public_url: @folder.is_public? ? @folder.public_url(base_url) : nil,
+          public_id: @folder.public_id,
+          is_public: @folder.is_public?
         }
       }, status: :ok
 
