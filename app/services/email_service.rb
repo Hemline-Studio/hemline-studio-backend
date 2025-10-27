@@ -140,6 +140,13 @@ class EmailService
 
   # Generic method to send emails with HTML templates
   def self.send_email(to:, subject:, template:, data: {})
+    # Validate environment variables
+    unless ENV["GMAIL_USERNAME"].present? && ENV["GMAIL_APP_PASSWORD"].present?
+      error_msg = "Email configuration missing: GMAIL_USERNAME or GMAIL_APP_PASSWORD not set"
+      Rails.logger.error error_msg
+      raise StandardError, error_msg
+    end
+
     # Get HTML content from template
     html_body = render_template(template, data)
 
@@ -172,9 +179,12 @@ class EmailService
     # Send the email
     mail.deliver!
 
+    Rails.logger.info "Email sent successfully to #{to}" if Rails.env.production?
+
     true
   rescue StandardError => e
-    Rails.logger.error "Failed to send email: #{e.message}"
+    Rails.logger.error "Failed to send email to #{to}: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n") if Rails.env.production?
     raise
   end
 

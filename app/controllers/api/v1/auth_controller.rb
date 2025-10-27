@@ -23,8 +23,17 @@ class Api::V1::AuthController < ApplicationController
     # Send magic link email
     email_result = EmailService.send_magic_link(
       result[:user],
-      result[:auth_code]
+      result[:auth_code],
     )
+
+    # Check if email sending failed
+    if !email_result[:success]
+      render json: { 
+        error: email_result[:message],
+        details: "Failed to send magic link email. Please check your email configuration."
+      }, status: :internal_server_error
+      return
+    end
 
     render json: {
       message: "Magic link sent successfully",
