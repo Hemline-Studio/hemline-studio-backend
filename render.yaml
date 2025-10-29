@@ -18,3 +18,18 @@ services:
           property: connectionString
       - key: RAILS_MASTER_KEY
         sync: false
+  
+  # Background job worker for sending emails asynchronously
+  - type: worker
+    plan: free
+    name: tailor-app-worker
+    runtime: ruby
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec rails solid_queue:start"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tailor-app
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
