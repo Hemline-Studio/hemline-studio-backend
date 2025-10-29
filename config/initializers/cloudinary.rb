@@ -8,7 +8,6 @@ if File.exist?(Rails.root.join("config", "cloudinary.yml"))
   # Process ERB in the YAML file (similar to database.yml)
   cloudinary_yml = ERB.new(File.read(Rails.root.join("config", "cloudinary.yml"))).result
   cloudinary_config = YAML.safe_load(cloudinary_yml, aliases: true)[Rails.env]
-  puts cloudinary_config
 
   if cloudinary_config
     Cloudinary.config do |config|

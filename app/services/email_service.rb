@@ -1,3 +1,5 @@
+
+require "resend"
 require "mail"
 
 class EmailService
@@ -146,15 +148,53 @@ class EmailService
 
   # Generic method to send emails with HTML templates
   def self.send_email(to:, subject:, template:, data: {})
+    # Get HTML content from template
+    html_body = render_template(template, data)
+
+    # Use Resend in production, Gmail SMTP in development
+    if Rails.env.production?
+      send_with_resend(to: to, subject: subject, html: html_body)
+    else
+      send_with_mail(to: to, subject: subject, html: html_body, template: template)
+    end
+
+    true
+  rescue StandardError => e
+    Rails.logger.error "Failed to send email to #{to}: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    raise
+  end
+
+  # Send email using Resend (Production)
+  def self.send_with_resend(to:, subject:, html:)
+    # Validate Resend API key
+    unless ENV["RESEND_API_KEY"].present?
+      error_msg = "Resend API key not configured. Set RESEND_API_KEY environment variable."
+      Rails.logger.error error_msg
+      raise StandardError, error_msg
+    end
+
+    Resend.api_key = ENV["RESEND_API_KEY"]
+
+    params = {
+      from: ENV["RESEND_FROM_EMAIL"] || "Hemline <onboarding@resend.dev>",
+      to: to,
+      subject: subject,
+      html: html
+    }
+
+    Resend::Emails.send(params)
+    Rails.logger.info "Resend email sent successfully to #{to}"
+  end
+
+  # Send email using Gmail SMTP (Development)
+  def self.send_with_mail(to:, subject:, html:, template:)
     # Validate environment variables
     unless ENV["GMAIL_USERNAME"].present? && ENV["GMAIL_APP_PASSWORD"].present?
       error_msg = "Email configuration missing: GMAIL_USERNAME or GMAIL_APP_PASSWORD not set"
       Rails.logger.error error_msg
       raise StandardError, error_msg
     end
-
-    # Get HTML content from template
-    html_body = render_template(template, data)
 
     # Configure mail with Gmail SMTP
     Mail.defaults do
@@ -169,29 +209,19 @@ class EmailService
 
       html_part do
         content_type "text/html; charset=UTF-8"
-        body html_body
+        body html
       end
     end
 
-    if Rails.env.development?
-      # Log email in development
-      Rails.logger.info "=== EMAIL SENT ==="
-      Rails.logger.info "To: #{to}"
-      Rails.logger.info "Subject: #{subject}"
-      Rails.logger.info "Template: #{template}"
-      Rails.logger.info "=================="
-    end
+    # Log email in development
+    Rails.logger.info "=== EMAIL SENT ==="
+    Rails.logger.info "To: #{to}"
+    Rails.logger.info "Subject: #{subject}"
+    Rails.logger.info "Template: #{template}"
+    Rails.logger.info "=================="
 
     # Send the email
     mail.deliver!
-
-    Rails.logger.info "Email sent successfully to #{to}" if Rails.env.production?
-
-    true
-  rescue StandardError => e
-    Rails.logger.error "Failed to send email to #{to}: #{e.message}"
-    Rails.logger.error e.backtrace.join("\n") if Rails.env.production?
-    raise
   end
 
   # Render HTML template with data

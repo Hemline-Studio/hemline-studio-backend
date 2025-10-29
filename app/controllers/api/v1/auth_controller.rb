@@ -20,31 +20,16 @@ class Api::V1::AuthController < ApplicationController
       return
     end
 
-    # Send magic link email
-    email_result = EmailService.send_magic_link(
-      result[:user],
-      result[:auth_code],
-    )
-
-    # Check if email sending failed
-    if !email_result[:success]
-      render json: { 
-        error: email_result[:message],
-        details: "Failed to send magic link email. Please check your email configuration."
-      }, status: :internal_server_error
-      return
-    end
+    # Queue magic link email to be sent asynchronously
+    # User gets immediate response while email sends in background
+    SendEmailJob.perform_later("magic_link", result[:user].id, result[:auth_code].id)
 
     render json: {
       message: "Magic link sent successfully",
-      # debug: Rails.env.development? ? {
-      #   code: email_result[:code],
-      #   magic_link: email_result[:magic_link]
-      # } : nil
-      debug: {
-        code: email_result[:code],
-        magic_link: email_result[:magic_link]
-      }
+      debug: Rails.env.development? ? {
+        code: result[:auth_code].code,
+        magic_link: result[:auth_code].magic_link(ENV["CLIENT_BASE_URL"] || "http://localhost:3000")
+      } : nil
     }
   end
 
