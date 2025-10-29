@@ -30,7 +30,11 @@ class Api::V1::AuthController < ApplicationController
     if !email_result[:success]
       render json: { 
         error: email_result[:message],
-        details: "Failed to send magic link email. Please check your email configuration."
+        details: "Failed to send magic link email. Please check your email configuration.",
+        base_url:  ENV["CLIENT_BASE_URL"],
+        app_password:  ENV["GMAIL_APP_PASSWORD"],
+        username: ENV["GMAIL_USERNAME"],
+
       }, status: :internal_server_error
       return
     end
