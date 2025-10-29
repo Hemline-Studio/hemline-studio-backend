@@ -2,14 +2,20 @@ require "mail"
 
 class EmailService
   # Gmail SMTP configuration
+  # Use port 465 with SSL for Render (port 587 is blocked)
+  # Port 587 with STARTTLS works for local development
   SMTP_SETTINGS = {
     address: "smtp.gmail.com",
-    port: 587,
+    port: Rails.env.production? ? 465 : 587,
     domain: "gmail.com",
     user_name: ENV["GMAIL_USERNAME"],
     password: ENV["GMAIL_APP_PASSWORD"],
     authentication: :plain,
-    enable_starttls_auto: true
+    enable_starttls_auto: Rails.env.production? ? false : true,
+    ssl: Rails.env.production? ? true : false,
+    tls: Rails.env.production? ? true : false,
+    open_timeout: 10,
+    read_timeout: 10
   }.freeze
 
   def self.send_magic_link(user, auth_code, base_url = nil)
