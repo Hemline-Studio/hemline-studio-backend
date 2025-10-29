@@ -213,15 +213,15 @@ class EmailService
       end
     end
 
+    # Send the email
+    mail.deliver!
+
     # Log email in development
     Rails.logger.info "=== EMAIL SENT ==="
     Rails.logger.info "To: #{to}"
     Rails.logger.info "Subject: #{subject}"
     Rails.logger.info "Template: #{template}"
     Rails.logger.info "=================="
-
-    # Send the email
-    mail.deliver!
   end
 
   # Render HTML template with data

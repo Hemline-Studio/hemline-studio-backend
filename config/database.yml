@@ -85,22 +85,12 @@ production:
   primary: &primary_production
     <<: *default
     url: <%= ENV['DATABASE_URL'] %>
-    database: <%= ENV["DATABASE_NAME"] %>
-    username: <%= ENV["DATABASE_USERNAME"] %>
-    password: <%= ENV["TAILOR_APP_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
-    # Use same database as primary for Render (single DB instance)
-    schema_search_path: public
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    # Use same database as primary for Render (single DB instance)
-    schema_search_path: public
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    # Use same database as primary for Render (single DB instance)
-    schema_search_path: public
-    database: tailor_app_production_cable
     migrations_paths: db/cable_migrate

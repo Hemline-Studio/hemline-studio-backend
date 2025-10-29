@@ -5,9 +5,6 @@ set -o errexit
 # Install dependencies
 bundle install
 
-# Create and migrate database
-bundle exec rails db:create
-bundle exec rails db:migrate
-
-# Load Solid Queue schema to create background job tables
-bundle exec rails db:schema:load:queue
+# Prepare database (creates if needed, runs migrations, loads schema)
+# This handles all database setup including solid_queue tables
+bundle exec rails db:prepare
