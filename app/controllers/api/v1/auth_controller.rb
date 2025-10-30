@@ -22,7 +22,7 @@ class Api::V1::AuthController < ApplicationController
 
     # Queue magic link email to be sent asynchronously
     # User gets immediate response while email sends in background
-    SendEmailJob.perform_now("magic_link", result[:user].id, result[:auth_code].id)
+    SendEmailJob.perform_later("magic_link", result[:user].id, result[:auth_code].id)
 
     render json: {
       message: "Magic link sent successfully",

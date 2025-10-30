@@ -15,7 +15,7 @@ class SendEmailJob < ApplicationJob
       auth_code = AuthCode.find(auth_code_id)
 
       result = email_service.send_magic_link(user, auth_code)
-
+      Rails.logger.info "Successfully sent #{email_type} email"
       unless result[:success]
         Rails.logger.error "Failed to send magic link email: #{result[:message]}"
         raise StandardError, result[:message]
