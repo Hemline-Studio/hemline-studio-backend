@@ -16,7 +16,7 @@ class ResendEmailService
   end
 
   def self.send_magic_link(user, auth_code, base_url = nil)
-    base_url ||= ENV["CLIENT_BASE_URL"] || "http://localhost:3000"
+    base_url ||= ENV["CLIENT_BASE_URL"]
     magic_link = auth_code.magic_link(base_url)
 
     # Fallback greeting when first/last name may be blank
@@ -64,7 +64,7 @@ class ResendEmailService
   end
 
   def self.send_welcome_email(user, base_url = nil)
-    base_url ||= ENV["CLIENT_BASE_URL"] || "http://localhost:3000"
+    base_url ||= ENV["CLIENT_BASE_URL"]
 
     display_name = if user.first_name.present? || user.last_name.present?
       user.full_name.strip
@@ -101,7 +101,7 @@ class ResendEmailService
   end
 
   def self.send_folder_share_email(to:, folder:, user:, recipient_name: nil, base_url: nil)
-    base_url ||= ENV["CLIENT_BASE_URL"] || "http://localhost:3000"
+    base_url ||= ENV["CLIENT_BASE_URL"]
 
     sender_name = if user.first_name.present? || user.last_name.present?
       user.full_name.strip

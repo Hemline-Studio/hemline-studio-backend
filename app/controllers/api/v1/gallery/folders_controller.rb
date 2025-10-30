@@ -314,7 +314,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
     end
 
     share_type = params[:share_type] # 'email', 'client', or 'link'
-    base_url = ENV["CLIENT_BASE_URL"] || "http://localhost:3000"
+    base_url = ENV["CLIENT_BASE_URL"]
 
     case share_type
     when "email"

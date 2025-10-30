@@ -1,2 +1,0 @@
-web: bin/rails server
-jobs: bin/jobs start

@@ -22,15 +22,22 @@ class Api::V1::AuthController < ApplicationController
 
     # Queue magic link email to be sent asynchronously
     # User gets immediate response while email sends in background
-    SendEmailJob.perform_later("magic_link", result[:user].id, result[:auth_code].id)
 
     render json: {
       message: "Magic link sent successfully",
-      debug: Rails.env.development? ? {
+      debug: {
         code: result[:auth_code].code,
-        magic_link: result[:auth_code].magic_link(ENV["CLIENT_BASE_URL"] || "http://localhost:3000")
-      } : nil
+        magic_link: result[:auth_code].magic_link(ENV["CLIENT_BASE_URL"])
+      }
     }
+
+    # Temporarily use a thread to send email in background
+    Thread.new do
+      user = User.find(result[:user].id)
+      auth_code = AuthCode.find(result[:auth_code].id)
+      EmailService.send_magic_link(user, auth_code)
+      Rails.logger.info "Successfully sent #{params[:email]&.strip&.downcase} email"
+    end
   end
 
   # POST /api/v1/auth/verify_code
