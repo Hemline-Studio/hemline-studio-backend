@@ -30,8 +30,11 @@ class Api::V1::PublicFoldersController < ApplicationController
           last_name: folder.user.last_name,
           full_name: folder.user.full_name,
           business_name: folder.user.business_name,
+          business_address: folder.user.business_address,
           business_image: folder.user.business_image,
-          profession: folder.user.profession
+          profession: folder.user.profession,
+          phone_numer: folder.user.phone_number,
+          skills: folder.user.skills
         },
         images: images_data,
         pagination: {
@@ -82,7 +85,10 @@ class Api::V1::PublicFoldersController < ApplicationController
           full_name: folder.user.full_name,
           business_name: folder.user.business_name,
           business_image: folder.user.business_image,
-          profession: folder.user.profession
+          business_address: folder.user.business_address,
+          profession: folder.user.profession,
+          phone_numer: folder.user.phone_number,
+          skills: folder.user.skills
         }
       },
       pagination: {
