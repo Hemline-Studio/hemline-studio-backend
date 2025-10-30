@@ -2,7 +2,7 @@ class SendEmailJob < ApplicationJob
   queue_as :default
 
   # Retry up to 3 times with exponential backoff
-  retry_on StandardError, wait: :exponentially_longer, attempts: 3
+  # retry_on StandardError, wai, attempts: 3
 
   def perform(email_type, *args)
     # Determine which email service to use

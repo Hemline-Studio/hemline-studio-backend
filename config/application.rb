@@ -28,5 +28,8 @@ module TailorApp
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    config.mission_control.jobs.base_controller_class = "MissionControlController"
+    config.mission_control.jobs.http_basic_auth_enabled = false
   end
 end
