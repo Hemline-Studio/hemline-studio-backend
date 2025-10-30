@@ -1,15 +1,12 @@
 class SendEmailJob < ApplicationJob
   queue_as :default
 
-  # Retry up to 3 times with exponential backoff (3s, 18s, 83s)
-  retry_on StandardError, wait: :exponentially_longer, attempts: 3 do |job, exception|
-    Rails.logger.error "SendEmailJob failed after #{job.executions} attempts: #{exception.message}"
-  end
+  # Retry up to 3 times with exponential backoff
+  retry_on StandardError, wait: :exponentially_longer, attempts: 3
 
   def perform(email_type, *args)
-    # Determine which email service t
-    # o use
-    email_service =ResendEmailService
+    # Determine which email service to use
+    email_service = Rails.env.production? ? ResendEmailService : EmailService
 
     case email_type
     when "magic_link"
