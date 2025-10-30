@@ -19,6 +19,7 @@ module UserDataConcern
     {
       id: target_user.id,
       email: target_user.email,
+      phone_number: target_user.phone_number,
       first_name: target_user.first_name,
       last_name: target_user.last_name,
       full_name: target_user.full_name,

@@ -33,7 +33,8 @@ class Api::V1::PublicFoldersController < ApplicationController
           business_address: folder.user.business_address,
           business_image: folder.user.business_image,
           profession: folder.user.profession,
-          phone_numer: folder.user.phone_number,
+          phone_number: folder.user.phone_number,
+          email: folder.user.email,
           skills: folder.user.skills
         },
         images: images_data,
@@ -87,7 +88,8 @@ class Api::V1::PublicFoldersController < ApplicationController
           business_image: folder.user.business_image,
           business_address: folder.user.business_address,
           profession: folder.user.profession,
-          phone_numer: folder.user.phone_number,
+          phone_number: folder.user.phone_number,
+          email: folder.user.email,
           skills: folder.user.skills
         }
       },
