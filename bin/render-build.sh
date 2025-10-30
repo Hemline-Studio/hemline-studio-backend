@@ -8,6 +8,3 @@ bundle install
 # Create and migrate database
 bundle exec rails db:create
 bundle exec rails db:migrate
-
-# Load Solid Queue schema to create background job tables
-bundle exec rails runner "load 'db/queue_schema.rb'"
