@@ -9,7 +9,7 @@ class ResendEmailService
         Rails.logger.error error_msg
         raise StandardError, error_msg
       end
-      
+
       Resend.api_key = ENV["RESEND_API_KEY"]
       Resend
     end
@@ -41,7 +41,7 @@ class ResendEmailService
     # Send email via Resend
     send_email(
       to: user.email,
-      from: ENV["RESEND_FROM_EMAIL"] || "Hemline <onboarding@resend.dev>",
+      from: ENV["RESEND_FROM_EMAIL"],
       subject: "Your magic link to sign in 🎉",
       html: html_body
     )
@@ -65,7 +65,7 @@ class ResendEmailService
 
   def self.send_welcome_email(user, base_url = nil)
     base_url ||= ENV["CLIENT_BASE_URL"] || "http://localhost:3000"
-    
+
     display_name = if user.first_name.present? || user.last_name.present?
       user.full_name.strip
     else
@@ -81,7 +81,7 @@ class ResendEmailService
 
     send_email(
       to: user.email,
-      from: ENV["RESEND_FROM_EMAIL"] || "Hemline <onboarding@resend.dev>",
+      from: ENV["RESEND_FROM_EMAIL"],
       subject: "Welcome to Hemline 🎉",
       html: html_body
     )
@@ -102,7 +102,7 @@ class ResendEmailService
 
   def self.send_folder_share_email(to:, folder:, user:, recipient_name: nil, base_url: nil)
     base_url ||= ENV["CLIENT_BASE_URL"] || "http://localhost:3000"
-    
+
     sender_name = if user.first_name.present? || user.last_name.present?
       user.full_name.strip
     else
@@ -123,7 +123,7 @@ class ResendEmailService
 
     send_email(
       to: to,
-      from: ENV["RESEND_FROM_EMAIL"] || "Hemline <onboarding@resend.dev>",
+      from: ENV["RESEND_FROM_EMAIL"],
       subject: "#{sender_name} shared a folder with you 📁",
       html: html_body
     )

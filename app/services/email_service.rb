@@ -177,7 +177,7 @@ class EmailService
     Resend.api_key = ENV["RESEND_API_KEY"]
 
     params = {
-      from: ENV["RESEND_FROM_EMAIL"] || "Hemline <onboarding@resend.dev>",
+      from: ENV["RESEND_FROM_EMAIL"],
       to: to,
       subject: subject,
       html: html
