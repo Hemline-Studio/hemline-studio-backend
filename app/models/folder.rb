@@ -120,7 +120,7 @@ class Folder < ApplicationRecord
 
   def public_url(base_url = "https://hemline.app")
     return nil unless is_public? && public_id.present?
-    "#{base_url}/folder/#{public_id}"
+    "#{base_url}/folders/#{public_id}"
   end
 
   private
