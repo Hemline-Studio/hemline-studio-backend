@@ -15,10 +15,14 @@ class Api::V1::ClientsController < Api::V1::BaseController
     clients = clients.order("LOWER(first_name) ASC, LOWER(last_name) ASC")
 
     result = paginate_collection(clients, params[:per_page])
-    print(result)
+
     serialized_clients = ClientSerializer.new(result[:data]).serializable_hash
 
-    render_success(serialized_clients, "All Clients Retrieved Successfully", :ok)
+    render json: {
+      message: "All Clients Retrieved Successfully",
+      data: serialized_clients[:data],
+      pagination: result[:pagination]
+    }, status: :ok
   end
 
   # GET /api/v1/clients/:id
@@ -55,7 +59,7 @@ class Api::V1::ClientsController < Api::V1::BaseController
         end
       end
 
-      serialized_client = ClientSerializer.new(@client.reload).serializable_hash
+      serialized_client = ClientSerializer.new(@client.reload).serializable_hash[:data]
       render_success(serialized_client, "Client created successfully", :created)
     end
   end
@@ -80,7 +84,7 @@ class Api::V1::ClientsController < Api::V1::BaseController
       # Handle custom fields using the same method as create
       save_custom_fields(@client, custom_fields_data) if custom_fields_data.any?
 
-      serialized_client = ClientSerializer.new(@client.reload).serializable_hash
+      serialized_client = ClientSerializer.new(@client.reload).serializable_hash[:data]
       render_success(serialized_client, "Client updated successfully")
     else
       render_validation_errors(@client)
@@ -194,6 +198,24 @@ class Api::V1::ClientsController < Api::V1::BaseController
       end
     end
   end
+
+  # Extract custom fields params
+  def extract_custom_fields_params
+    return {} unless params[:client] && params[:client][:custom_fields]
+
+    custom_fields_data = params[:client][:custom_fields]
+
+    custom_fields_data = if custom_fields_data.respond_to?(:to_unsafe_h)
+      custom_fields_data.to_unsafe_h
+    elsif custom_fields_data.respond_to?(:to_h)
+      custom_fields_data.to_h
+    else
+      {}
+    end
+
+    custom_fields_data.is_a?(Hash) ? custom_fields_data : {}
+  end
+
 
   # Extract orders params
   def extract_orders_params
