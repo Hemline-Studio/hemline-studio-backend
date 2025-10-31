@@ -67,12 +67,12 @@ class Api::V1::BaseController < ApplicationController
     render_error([ message ], message, :not_found)
   end
 
-  def paginate_collection(collection, per_page = 25)
+  def paginate_collection(collection, per_page = 20)
     return { data: [], pagination: {} } if collection.blank?
 
     page = params[:page].presence || 1
     per_page = per_page.to_i
-    per_page = 25 if per_page <= 0
+    per_page = 20 if per_page <= 0
     per_page = [ per_page, 100 ].min
 
     begin
