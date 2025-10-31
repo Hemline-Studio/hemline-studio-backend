@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_many :custom_fields, dependent: :destroy
   has_many :folders, dependent: :destroy
   has_many :galleries, dependent: :destroy
+  has_many :orders, dependent: :destroy
 
   # Define profession choices
   PROFESSION_CHOICES = [

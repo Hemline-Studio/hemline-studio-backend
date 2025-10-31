@@ -12,7 +12,7 @@ class Api::V1::ClientsController < Api::V1::BaseController
       clients = include_trashed ? clients.active : clients.trashed
     end
 
-   clients = clients.order("LOWER(first_name) ASC, LOWER(last_name) ASC")
+    clients = clients.order("LOWER(first_name) ASC, LOWER(last_name) ASC")
 
     result = paginate_collection(clients, params[:per_page])
     print(result)
@@ -31,25 +31,32 @@ class Api::V1::ClientsController < Api::V1::BaseController
   def create
     @client = current_user.clients.build(client_params)
 
-    # Extract custom fields safely - need to permit the hash structure
-    custom_fields_data = params[:client][:custom_fields] if params[:client] && params[:client][:custom_fields]
+    # Extract custom fields
+    custom_fields_data = extract_custom_fields_params
 
-    # Convert ActionController::Parameters to hash if needed
-    if custom_fields_data.respond_to?(:to_unsafe_h)
-      custom_fields_data = custom_fields_data.to_unsafe_h
-    elsif custom_fields_data.respond_to?(:to_h)
-      custom_fields_data = custom_fields_data.to_h
-    end
+    # Extract orders
+    orders_data = extract_orders_params
 
-    # Ensure it's a hash, not an array or other type
-    custom_fields_data = {} unless custom_fields_data.is_a?(Hash)
+    ActiveRecord::Base.transaction do
+      unless @client.save
+        render_validation_errors(@client)
+        raise ActiveRecord::Rollback
+      end
 
-    if @client.save
+      # Save custom fields
       save_custom_fields(@client, custom_fields_data) if custom_fields_data.any?
+
+      # Create orders
+      if orders_data.any?
+        orders_errors = create_orders_for_client(@client, orders_data)
+        if orders_errors.any?
+          render_error(orders_errors, "Client created but some orders failed", :unprocessable_entity)
+          raise ActiveRecord::Rollback
+        end
+      end
+
       serialized_client = ClientSerializer.new(@client.reload).serializable_hash
       render_success(serialized_client, "Client created successfully", :created)
-    else
-      render_validation_errors(@client)
     end
   end
 
@@ -121,11 +128,16 @@ class Api::V1::ClientsController < Api::V1::BaseController
 
   def client_params
     params.require(:client).permit(
-      :name, :gender, :measurement_unit, :phone_number, :email,
-      :ankle, :bicep, :bottom, :chest, :head, :height, :hip, :inseam,
-      :knee, :neck, :outseam, :shorts, :shoulder, :sleeve, :short_sleeve,
-      :thigh, :top_length, :waist, :wrist
-      # Note: custom_fields are handled separately in the create/update methods
+      :first_name, :last_name, :gender, :measurement_unit, :phone_number, :email,
+      :shoulder_width, :bust_chest, :round_underbust, :neck_circumference,
+      :armhole_circumference, :arm_length_full, :arm_length_three_quarter,
+      :sleeve_length, :round_sleeve_bicep, :elbow_circumference, :wrist_circumference,
+      :top_length, :bust_point_nipple_to_nipple, :shoulder_to_bust_point,
+      :shoulder_to_waist, :round_chest_upper_bust, :back_width, :back_length,
+      :tommy_waist, :waist, :high_hip, :hip_full, :lap_thigh, :knee_circumference,
+      :calf_circumference, :ankle_circumference, :skirt_length, :trouser_length_outseam,
+      :inseam, :crotch_depth, :waist_to_hip, :waist_to_floor, :slit_height,
+      :bust_apex_to_waist
     )
   end
 
@@ -180,7 +192,36 @@ class Api::V1::ClientsController < Api::V1::BaseController
       rescue StandardError => e
 
       end
+    end
   end
+
+  # Extract orders params
+  def extract_orders_params
+    return [] unless params[:client] && params[:client][:orders]
+
+    orders_data = params[:client][:orders]
+
+    # Ensure it's an array
+    orders_data = [ orders_data ] unless orders_data.is_a?(Array)
+    orders_data
+  end
+
+  # Create orders for a client
+  def create_orders_for_client(client, orders_params)
+    errors = []
+
+    orders_params.each_with_index do |order_params, index|
+      order = client.orders.build(
+        order_params.permit(:item, :quantity, :notes, :due_date)
+      )
+      order.user = current_user
+
+      unless order.save
+        errors << "Order #{index + 1}: #{order.errors.full_messages.join(', ')}"
+      end
+    end
+
+    errors
   end
 
   def valid_uuid?(string)

@@ -33,6 +33,16 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :orders do
+        collection do
+          delete :bulk_delete
+        end
+        member do
+          patch :mark_done
+          patch :mark_pending
+        end
+      end
+
       # Custom field routes
       resources :custom_fields
 
