@@ -97,6 +97,19 @@ class Client < ApplicationRecord
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
   validates :phone_number, length: { maximum: 20 }, allow_blank: true
 
+  # Measurement fields list
+  def self.measurement_fields
+    %w[
+      shoulder_width bust_chest round_underbust neck_circumference armhole_circumference
+      arm_length_full arm_length_three_quarter sleeve_length round_sleeve_bicep
+      elbow_circumference wrist_circumference top_length bust_point_nipple_to_nipple
+      shoulder_to_bust_point shoulder_to_waist round_chest_upper_bust back_width
+      back_length tommy_waist waist high_hip hip_full lap_thigh knee_circumference
+      calf_circumference ankle_circumference skirt_length trouser_length_outseam
+      inseam crotch_depth waist_to_hip waist_to_floor slit_height bust_apex_to_waist
+    ]
+  end
+
   # Validate measurement values are positive when present
   measurement_fields.each do |measurement|
     validates measurement.to_sym, numericality: { greater_than: 0 }, allow_blank: true
@@ -117,17 +130,6 @@ class Client < ApplicationRecord
     where(id: client_ids).update_all(in_trash: true, updated_at: Time.current)
   end
 
-  def self.measurement_fields
-    %w[
-      shoulder_width bust_chest round_underbust neck_circumference armhole_circumference
-      arm_length_full arm_length_three_quarter sleeve_length round_sleeve_bicep
-      elbow_circumference wrist_circumference top_length bust_point_nipple_to_nipple
-      shoulder_to_bust_point shoulder_to_waist round_chest_upper_bust back_width
-      back_length tommy_waist waist high_hip hip_full lap_thigh knee_circumference
-      calf_circumference ankle_circumference skirt_length trouser_length_outseam
-      inseam crotch_depth waist_to_hip waist_to_floor slit_height bust_apex_to_waist
-    ]
-  end
 
   # Instance methods
   def soft_delete!

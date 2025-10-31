@@ -78,6 +78,7 @@ class Order < ApplicationRecord
   end
 
   def client_name
-    client.full_name
+    return nil if client.first_name.blank? && client.last_name.blank?
+    [ client.first_name, client.last_name ].compact.join(" ").strip
   end
 end

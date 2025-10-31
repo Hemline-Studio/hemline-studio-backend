@@ -5,7 +5,7 @@ class ClientSerializer
 
   # Full name convenience attribute
   attribute :full_name do |client|
-    client.full_name
+    [ client.first_name, client.last_name ].compact.join(" ").strip
   end
 
   # Include all new measurements, converted to display format
