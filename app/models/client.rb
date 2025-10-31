@@ -4,7 +4,8 @@
 #
 # Standard Columns:
 #  id                    :uuid            not null, primary key
-#  name                  :string          not null
+#  first_name                  :string          not null
+#  last_name                  :string          not null
 #  gender                :string          not null (Male/Female)
 #  email                 :string
 #  phone_number          :string
@@ -88,7 +89,8 @@ class Client < ApplicationRecord
   has_many :custom_fields, through: :client_custom_field_values
 
   # Validations
-  validates :name, presence: true, length: { minimum: 2, maximum: 100 }
+  validates :first_name, presence: true, length: { minimum: 2, maximum: 100 }
+  validates :last_name, presence: true, length: { minimum: 2, maximum: 100 }
   validates :gender, presence: true, inclusion: { in: %w[Male Female] }
   validates :measurement_unit, presence: true, inclusion: { in: %w[inches centimeters] }
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true

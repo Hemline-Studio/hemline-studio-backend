@@ -12,7 +12,7 @@ class Api::V1::ClientsController < Api::V1::BaseController
       clients = include_trashed ? clients.active : clients.trashed
     end
 
-    clients = clients.order(:name)
+   clients = clients.order("LOWER(first_name) ASC, LOWER(last_name) ASC")
 
     result = paginate_collection(clients, params[:per_page])
     print(result)
