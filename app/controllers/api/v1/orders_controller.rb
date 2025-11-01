@@ -27,19 +27,22 @@ class Api::V1::OrdersController < Api::V1::BaseController
     orders = orders.ordered_by_due_date
 
     result = paginate_collection(orders, params[:per_page] || 20)
-    serialized_orders = OrderSerializer.new(result[:data]).serializable_hash
 
-    render_success(
-      serialized_orders.merge(pagination: result[:pagination]),
-      "Orders retrieved successfully",
-      :ok
-    )
+    # Serialize each order individually to avoid passing an ActiveRecord::Relation
+    serialized_orders = result[:data].map { |order| OrderSerializer.new(order).as_json }
+
+    payload = {
+      orders: serialized_orders,
+      pagination: result[:pagination]
+    }
+
+    render_success(payload, "Orders retrieved successfully", :ok)
   end
 
   # GET /api/v1/orders/:id
   def show
-    serialized_order = OrderSerializer.new(@order).serializable_hash
-    render_success(serialized_order)
+    serialized_order = OrderSerializer.new(@order).as_json
+    render_success(serialized_order, "Order retrieved successfully", :ok)
   end
 
   # POST /api/v1/orders
@@ -76,8 +79,8 @@ class Api::V1::OrdersController < Api::V1::BaseController
     if errors.any?
       render_error(errors, "Failed to create orders", :unprocessable_entity)
     else
-      serialized_orders = OrderSerializer.new(created_orders).serializable_hash
-      render_success(serialized_orders, "#{created_orders.count} order(s) created successfully", :created)
+      serialized_orders = created_orders.map { |order| OrderSerializer.new(order).as_json }
+      render_success({ orders: serialized_orders }, "#{created_orders.count} order(s) created successfully", :created)
     end
   end
 
@@ -110,8 +113,8 @@ class Api::V1::OrdersController < Api::V1::BaseController
     if errors.any?
       render_error(errors, "Failed to create orders", :unprocessable_entity)
     else
-      serialized_orders = OrderSerializer.new(created_orders).serializable_hash
-      render_success(serialized_orders, "#{created_orders.count} order(s) created successfully", :created)
+      serialized_orders = created_orders.map { |order| OrderSerializer.new(order).as_json }
+      render_success({ orders: serialized_orders }, "#{created_orders.count} order(s) created successfully", :created)
     end
   end
 
