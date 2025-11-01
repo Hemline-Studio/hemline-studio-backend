@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_24_074352) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_31_184908) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -40,37 +40,52 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_074352) do
   end
 
   create_table "clients", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "name", null: false
     t.string "gender", null: false
     t.string "measurement_unit", null: false
     t.boolean "in_trash", default: false
     t.string "phone_number"
     t.string "email"
-    t.decimal "ankle", precision: 8, scale: 2
-    t.decimal "bicep", precision: 8, scale: 2
-    t.decimal "bottom", precision: 8, scale: 2
-    t.decimal "chest", precision: 8, scale: 2
-    t.decimal "head", precision: 8, scale: 2
-    t.decimal "height", precision: 8, scale: 2
-    t.decimal "hip", precision: 8, scale: 2
-    t.decimal "inseam", precision: 8, scale: 2
-    t.decimal "knee", precision: 8, scale: 2
-    t.decimal "neck", precision: 8, scale: 2
-    t.decimal "outseam", precision: 8, scale: 2
-    t.decimal "shorts", precision: 8, scale: 2
-    t.decimal "shoulder", precision: 8, scale: 2
-    t.decimal "sleeve", precision: 8, scale: 2
-    t.decimal "short_sleeve", precision: 8, scale: 2
-    t.decimal "thigh", precision: 8, scale: 2
-    t.decimal "top_length", precision: 8, scale: 2
-    t.decimal "waist", precision: 8, scale: 2
-    t.decimal "wrist", precision: 8, scale: 2
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "user_id"
+    t.decimal "shoulder_width", precision: 10, scale: 2
+    t.decimal "bust_chest", precision: 10, scale: 2
+    t.decimal "round_underbust", precision: 10, scale: 2
+    t.decimal "neck_circumference", precision: 10, scale: 2
+    t.decimal "armhole_circumference", precision: 10, scale: 2
+    t.decimal "arm_length_full", precision: 10, scale: 2
+    t.decimal "arm_length_three_quarter", precision: 10, scale: 2
+    t.decimal "sleeve_length", precision: 10, scale: 2
+    t.decimal "round_sleeve_bicep", precision: 10, scale: 2
+    t.decimal "elbow_circumference", precision: 10, scale: 2
+    t.decimal "wrist_circumference", precision: 10, scale: 2
+    t.decimal "top_length", precision: 10, scale: 2
+    t.decimal "bust_point_nipple_to_nipple", precision: 10, scale: 2
+    t.decimal "shoulder_to_bust_point", precision: 10, scale: 2
+    t.decimal "shoulder_to_waist", precision: 10, scale: 2
+    t.decimal "round_chest_upper_bust", precision: 10, scale: 2
+    t.decimal "back_width", precision: 10, scale: 2
+    t.decimal "back_length", precision: 10, scale: 2
+    t.decimal "tommy_waist", precision: 10, scale: 2
+    t.decimal "waist", precision: 10, scale: 2
+    t.decimal "high_hip", precision: 10, scale: 2
+    t.decimal "hip_full", precision: 10, scale: 2
+    t.decimal "lap_thigh", precision: 10, scale: 2
+    t.decimal "knee_circumference", precision: 10, scale: 2
+    t.decimal "calf_circumference", precision: 10, scale: 2
+    t.decimal "ankle_circumference", precision: 10, scale: 2
+    t.decimal "skirt_length", precision: 10, scale: 2
+    t.decimal "trouser_length_outseam", precision: 10, scale: 2
+    t.decimal "inseam", precision: 10, scale: 2
+    t.decimal "crotch_depth", precision: 10, scale: 2
+    t.decimal "waist_to_hip", precision: 10, scale: 2
+    t.decimal "waist_to_floor", precision: 10, scale: 2
+    t.decimal "slit_height", precision: 10, scale: 2
+    t.decimal "bust_apex_to_waist", precision: 10, scale: 2
+    t.string "first_name"
+    t.string "last_name"
     t.index ["gender"], name: "index_clients_on_gender"
     t.index ["in_trash"], name: "index_clients_on_in_trash"
-    t.index ["name"], name: "index_clients_on_name"
     t.index ["user_id"], name: "index_clients_on_user_id"
   end
 
@@ -124,6 +139,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_074352) do
     t.index ["user_id"], name: "index_galleries_on_user_id"
   end
 
+  create_table "orders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "client_id", null: false
+    t.uuid "user_id", null: false
+    t.string "item", null: false
+    t.integer "quantity", default: 1, null: false
+    t.text "notes"
+    t.boolean "is_done", default: false, null: false
+    t.datetime "due_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_orders_on_client_id"
+    t.index ["due_date"], name: "index_orders_on_due_date"
+    t.index ["is_done"], name: "index_orders_on_is_done"
+    t.index ["user_id", "client_id"], name: "index_orders_on_user_id_and_client_id"
+    t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
   create_table "tokens", force: :cascade do |t|
     t.string "token", null: false
     t.datetime "expires_at"
@@ -147,6 +179,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_074352) do
     t.string "skills", default: [], array: true
     t.string "business_image"
     t.string "business_image_public_id"
+    t.string "phone_number"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["has_onboarded"], name: "index_users_on_has_onboarded"
     t.index ["profession"], name: "index_users_on_profession"
@@ -160,5 +193,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_24_074352) do
   add_foreign_key "custom_fields", "users"
   add_foreign_key "folders", "users"
   add_foreign_key "galleries", "users"
+  add_foreign_key "orders", "clients"
+  add_foreign_key "orders", "users"
   add_foreign_key "tokens", "users"
 end
