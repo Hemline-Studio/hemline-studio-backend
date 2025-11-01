@@ -121,7 +121,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
   # PATCH /api/v1/orders/:id
   def update
     if @order.update(order_params)
-      serialized_order = OrderSerializer.new(@order.reload).serializable_hash
+      serialized_order = OrderSerializer.new(@order.reload).as_json
       render_success(serialized_order, "Order updated successfully")
     else
       render_validation_errors(@order)
@@ -132,7 +132,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
   def mark_done
     set_order
     if @order.mark_done!
-      serialized_order = OrderSerializer.new(@order).serializable_hash
+      serialized_order = OrderSerializer.new(@order).as_json
       render_success(serialized_order, "Order marked as done")
     else
       render_validation_errors(@order)
@@ -143,7 +143,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
   def mark_pending
     set_order
     if @order.mark_pending!
-      serialized_order = OrderSerializer.new(@order).serializable_hash
+      serialized_order = OrderSerializer.new(@order).as_json
       render_success(serialized_order, "Order marked as pending")
     else
       render_validation_errors(@order)

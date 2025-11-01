@@ -33,6 +33,8 @@ Rails.application.routes.draw do
         end
       end
 
+      # Orders Routes
+      post "/clients/:client_id/orders", to: "orders#create_for_client"
       resources :orders do
         collection do
           delete :bulk_delete
