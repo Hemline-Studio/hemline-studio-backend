@@ -21,8 +21,7 @@
 #  round_underbust               :decimal(10,2)  # Measurement under the bust
 #  neck_circumference            :decimal(10,2)  # Around the neck
 #  armhole_circumference         :decimal(10,2)  # Around the armhole
-#  arm_length_full               :decimal(10,2)  # Full arm length
-#  arm_length_three_quarter      :decimal(10,2)  # Three-quarter sleeve length
+#  arm_length_full_three_quarter :decimal(10,2)  # Full/Three-quarter arm length
 #  sleeve_length                 :decimal(10,2)  # Standard sleeve length
 #  round_sleeve_bicep            :decimal(10,2)  # Around the bicep/sleeve
 #  elbow_circumference           :decimal(10,2)  # Around the elbow
@@ -101,7 +100,7 @@ class Client < ApplicationRecord
   def self.measurement_fields
     %w[
       shoulder_width bust_chest round_underbust neck_circumference armhole_circumference
-      arm_length_full arm_length_three_quarter sleeve_length round_sleeve_bicep
+      arm_length_full_three_quarter sleeve_length round_sleeve_bicep
       elbow_circumference wrist_circumference top_length bust_point_nipple_to_nipple
       shoulder_to_bust_point shoulder_to_waist round_chest_upper_bust back_width
       back_length tommy_waist waist high_hip hip_full lap_thigh knee_circumference
