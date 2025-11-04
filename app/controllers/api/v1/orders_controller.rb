@@ -23,8 +23,30 @@ class Api::V1::OrdersController < Api::V1::BaseController
     # Filter by client
     orders = orders.where(client_id: params[:client_id]) if params[:client_id].present?
 
-    # Default ordering: pending first (ordered by due date), then completed
-    orders = orders.ordered_by_due_date
+    # Apply search filter if search param is provided
+    if params[:search].present?
+      search_term = "%#{params[:search].strip.downcase}%"
+      orders = orders.joins(:client).where(
+        "LOWER(orders.item) LIKE ? OR LOWER(orders.notes) LIKE ? OR LOWER(clients.first_name) LIKE ? OR LOWER(clients.last_name) LIKE ? OR LOWER(clients.email) LIKE ? OR LOWER(clients.phone_number) LIKE ?",
+        search_term, search_term, search_term, search_term, search_term, search_term
+      )
+    end
+
+    # Apply sorting based on sort_by parameter
+    orders = case params[:sort_by]
+    when "last_updated"
+      orders.order(updated_at: :desc)
+    when "due_date_asc"
+      orders.order(Arel.sql("due_date ASC NULLS LAST"))
+    when "due_date_desc"
+      orders.order(Arel.sql("due_date DESC NULLS LAST"))
+    when "a-z"
+      orders.order(Arel.sql("LOWER(orders.item) ASC"))
+    when "z-a"
+      orders.order(Arel.sql("LOWER(orders.item) DESC"))
+    else # default ordering: pending first (ordered by due date), then completed
+      orders.ordered_by_due_date
+    end
 
     result = paginate_collection(orders, params[:per_page] || 20)
 

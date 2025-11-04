@@ -12,7 +12,24 @@ class Api::V1::ClientsController < Api::V1::BaseController
       clients = include_trashed ? clients.active : clients.trashed
     end
 
-    clients = clients.order("LOWER(first_name) ASC, LOWER(last_name) ASC")
+    # Apply search filter if search param is provided
+    if params[:search].present?
+      search_term = "%#{params[:search].strip.downcase}%"
+      clients = clients.where(
+        "LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(phone_number) LIKE ?",
+        search_term, search_term, search_term, search_term
+      )
+    end
+
+    # Apply sorting based on sort_by parameter
+    clients = case params[:sort_by]
+    when "last_updated"
+      clients.order(updated_at: :desc)
+    when "z-a"
+      clients.order("LOWER(first_name) DESC, LOWER(last_name) DESC")
+    else # default to "a-z"
+      clients.order("LOWER(first_name) ASC, LOWER(last_name) ASC")
+    end
 
     result = paginate_collection(clients, params[:per_page])
 
@@ -134,7 +151,7 @@ class Api::V1::ClientsController < Api::V1::BaseController
     params.require(:client).permit(
       :first_name, :last_name, :gender, :measurement_unit, :phone_number, :email,
       :shoulder_width, :bust_chest, :round_underbust, :neck_circumference,
-      :armhole_circumference, :arm_length_full, :arm_length_three_quarter,
+      :armhole_circumference, :arm_length_full, :arm_length_full_three_quarter,
       :sleeve_length, :round_sleeve_bicep, :elbow_circumference, :wrist_circumference,
       :top_length, :bust_point_nipple_to_nipple, :shoulder_to_bust_point,
       :shoulder_to_waist, :round_chest_upper_bust, :back_width, :back_length,

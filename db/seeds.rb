@@ -215,7 +215,7 @@ clients = []
     neck_circumference: rand(32.0..40.0).round(1),
     sleeve_length: rand(55.0..65.0).round(1),
     arm_length_full: rand(55.0..65.0).round(1),
-    arm_length_three_quarter: rand(40.0..50.0).round(1),
+    arm_length_full_three_quarter: rand(40.0..50.0).round(1),
     round_sleeve_bicep: rand(25.0..35.0).round(1),
     wrist_circumference: rand(14.0..18.0).round(1),
     elbow_circumference: rand(23.0..28.0).round(1),
