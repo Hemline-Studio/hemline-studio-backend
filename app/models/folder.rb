@@ -118,7 +118,7 @@ class Folder < ApplicationRecord
     update!(is_public: false, public_id: nil)
   end
 
-  def public_url(base_url = "https://hemline.app")
+  def public_url(base_url = "https://hemline.studio")
     return nil unless is_public? && public_id.present?
     "#{base_url}/folders/#{public_id}"
   end

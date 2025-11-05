@@ -203,7 +203,7 @@ class EmailService
 
     # Create and send the email
     mail = Mail.new do
-      from     ENV["GMAIL_USERNAME"] || "hello@hemline.app"
+      from     ENV["GMAIL_USERNAME"] || "hello@hemline.studio"
       to       to
       subject  subject
 

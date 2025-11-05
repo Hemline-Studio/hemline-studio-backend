@@ -10,7 +10,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     # Allow specific origins based on environment
     if Rails.env.production?
       origins "https://hemline-frontend.vercel.app",
-              "https://hemline.app",
+              "https://hemline.studio",
               /https:\/\/.*\.vercel\.app$/  # Allow all Vercel preview deployments
     else
       # In development, allow localhost with different ports
