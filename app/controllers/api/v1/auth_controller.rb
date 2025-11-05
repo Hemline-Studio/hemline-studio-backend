@@ -8,7 +8,14 @@ class Api::V1::AuthController < ApplicationController
     email = params[:email]&.strip&.downcase
 
     if email.blank?
-      render json: { error: "Email is required" }, status: :bad_request
+      render json: { errors: [ "Email is required" ] }, status: :bad_request
+      return
+    end
+
+    allowed_emails = [ "wisdomiyamu@gmail.com", "ibukunotusanya14@gmail.com", "fadaofficial01@gmail.com", "wisdom@hemline.studio", "adetunji@hemline.studio", "subomi@hemline.studio", "hello@hemline.studio", "adetunjidummy@gmail.com", "adetunjiadeyinka29@gmail.com" ]
+
+    if email.present? && !allowed_emails.include?(email)
+      render json: { errors: [ "Unauthorized email address" ] }, status: :unauthorized
       return
     end
 
@@ -16,7 +23,7 @@ class Api::V1::AuthController < ApplicationController
     result = AuthService.authenticate_user!(email)
 
     if !result[:success]
-      render json: { error: result[:message] }, status: :unprocessable_entity
+      render json: { errors: [ result[:message] ] }, status: :unprocessable_entity
       return
     end
 
