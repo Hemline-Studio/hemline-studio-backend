@@ -27,7 +27,7 @@ Rails.application.configure do
 
   # Don't force SSL redirect since Railway/Render handle it at the proxy level
   # Forcing SSL would convert POST requests to GET during redirect
-  config.force_ssl = false
+  config.force_ssl = true
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
