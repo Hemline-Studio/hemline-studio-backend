@@ -22,10 +22,12 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
+  # Railway/Render handle SSL termination, so we assume SSL but don't force redirect
   config.assume_ssl = true
 
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+  # Don't force SSL redirect since Railway/Render handle it at the proxy level
+  # Forcing SSL would convert POST requests to GET during redirect
+  config.force_ssl = false
 
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
