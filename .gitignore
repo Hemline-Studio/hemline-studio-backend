@@ -40,3 +40,4 @@ gems
 cache
 specifications
 vendor/bundle/
+/config/credentials/production.key
