@@ -31,15 +31,15 @@ class Api::V1::AuthController < ApplicationController
     # User gets immediate response while email sends in background
 
     # Temporary solution to solid queueing issues - send email synchronously
-    user = result[:user]
-    auth_code = result[:auth_code]
+    # user = result[:user]
+    # auth_code = result[:auth_code]
 
-    sendEmail = EmailService.send_magic_link(user, auth_code)
-    Rails.logger.info "Successfully sent magic link email"
-    unless sendEmail[:success]
-      Rails.logger.error "Failed to send magic link email: #{sendEmail[:message]}"
-      raise StandardError, sendEmail[:message]
-    end
+    # sendEmail = EmailService.send_magic_link(user, auth_code)
+    # Rails.logger.info "Successfully sent magic link email"
+    # unless sendEmail[:success]
+    #   Rails.logger.error "Failed to send magic link email: #{sendEmail[:message]}"
+    #   raise StandardError, sendEmail[:message]
+    # end
 
     # SendEmailJob.perform_now("magic_link", result[:user].id, result[:auth_code].id)
 
