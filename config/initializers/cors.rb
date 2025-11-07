@@ -11,6 +11,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     if Rails.env.production?
       origins "https://hemline-frontend.vercel.app",
               "https://hemline.studio",
+              "https://www.hemline.studio",
               /https:\/\/.*\.vercel\.app$/  # Allow all Vercel preview deployments
     else
       # In development, allow localhost with different ports
@@ -26,6 +27,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
       headers: :any,
       methods: [ :get, :post, :put, :patch, :delete, :options, :head ],
       credentials: true,
-      expose: [ "Authorization" ]
+      expose: [ "Authorization" ],
+      max_age: 600
   end
 end
