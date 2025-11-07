@@ -14,10 +14,19 @@ FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+# Install dependencies for Postgres
+# Configure apt to avoid Hash Sum mismatch
+RUN echo "Acquire::http::Pipeline-Depth 0;" > /etc/apt/apt.conf.d/99custom && \
+    echo "Acquire::http::No-Cache true;" >> /etc/apt/apt.conf.d/99custom && \
+    echo "Acquire::BrokenProxy    true;" >> /etc/apt/apt.conf.d/99custom
+
+# Update package lists and install required libraries
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --fix-missing \
+    build-essential \
+    python3 \
+    libpq-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set production environment
 ENV RAILS_ENV="production" \
