@@ -30,6 +30,20 @@ class Api::V1::AuthController < ApplicationController
     # Queue magic link email to be sent asynchronously
     # User gets immediate response while email sends in background
 
+    # Temporary solution to solid queueing issues - send email synchronously
+    email_service = Rails.env.production? ? ResendEmailService : EmailService
+    user = result[:user]
+    auth_code = result[:auth_code]
+
+    sendEmail = email_service.send_magic_link(user, auth_code)
+      Rails.logger.info "Successfully sent magic link email"
+      unless sendEmail[:success]
+        Rails.logger.error "Failed to send magic link email: #{sendEmail[:message]}"
+        raise StandardError, sendEmail[:message]
+      end
+
+    # SendEmailJob.perform_now("magic_link", result[:user].id, result[:auth_code].id)
+
     render json: {
       message: "Magic link sent successfully",
       debug: {
@@ -37,14 +51,6 @@ class Api::V1::AuthController < ApplicationController
         magic_link: result[:auth_code].magic_link(ENV["CLIENT_BASE_URL"])
       }
     }
-
-    # Temporarily use a thread to send email in background
-    Thread.new do
-      user = User.find(result[:user].id)
-      auth_code = AuthCode.find(result[:auth_code].id)
-      EmailService.send_magic_link(user, auth_code)
-      Rails.logger.info "Successfully sent #{params[:email]&.strip&.downcase} email"
-    end
   end
 
   # POST /api/v1/auth/verify_code
