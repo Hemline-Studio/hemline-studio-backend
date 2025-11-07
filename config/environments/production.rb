@@ -90,9 +90,7 @@ Rails.application.configure do
   # Enable DNS rebinding protection and other `Host` header attacks.
   config.hosts = [
     "tailor-app-3a7i.onrender.com",  # Your backend domain
-    /.*\.onrender\.com/,             # Allow other Render domains
-    /.*\.railway\.app/,              # Allow Railway domains
-    /.*\.up\.railway\.app/           # Allow Railway preview domains
+    "https://hemline.studio/"
     # "localhost",                      # Allow localhost for local Docker
     # "127.0.0.1",                      # Allow 127.0.0.1 for local Docker
     # /^localhost:\d+$/,                # Allow localhost with any port
