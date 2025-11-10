@@ -49,7 +49,7 @@ class Api::V1::BaseController < ApplicationController
     render json: response, status: status
   end
 
-  def render_error(errors, message = "Operation failed", status = :unprocessable_entity)
+  def render_error(errors, message = "Operation failed", status = :unprocessable_content)
     errors = [ errors ] unless errors.is_a?(Array)
 
     render json: {

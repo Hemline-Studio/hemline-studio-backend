@@ -44,16 +44,15 @@ class AuthService
   def self.verify_magic_link(token)
     auth_code = AuthCode.valid_codes.find_by(token: token)
 
-
     # Figure out how to approach the errors array issue from the render_error method in the base controller
     return { success: false, message: "Invalid or expired magic link" } unless auth_code
 
     # Mark code as used
     auth_code.use!
 
-  # Generate JWT token and persist it
-  jwt_token = JwtService.encode({ user_id: auth_code.user.id })
-  Token.create!(user: auth_code.user, token: jwt_token, expires_at: 24.hours.from_now)
+    # Generate JWT token and persist it
+    jwt_token = JwtService.encode({ user_id: auth_code.user.id })
+    Token.create!(user: auth_code.user, token: jwt_token, expires_at: 24.hours.from_now)
 
     {
       success: true,

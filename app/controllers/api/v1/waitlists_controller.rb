@@ -43,7 +43,7 @@ class Api::V1::WaitlistsController < ApplicationController
           success: false,
           message: "Failed to join waitlist",
           errors: waitlist.errors.full_messages
-        }, status: :unprocessable_entity
+        }, status: :unprocessable_content
       end
     end
   end

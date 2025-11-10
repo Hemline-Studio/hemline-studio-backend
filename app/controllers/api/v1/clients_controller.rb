@@ -71,7 +71,7 @@ class Api::V1::ClientsController < Api::V1::BaseController
       if orders_data.any?
         orders_errors = create_orders_for_client(@client, orders_data)
         if orders_errors.any?
-          render_error(orders_errors, "Client created but some orders failed", :unprocessable_entity)
+          render_error(orders_errors, "Client created but some orders failed", :unprocessable_content)
           raise ActiveRecord::Rollback
         end
       end

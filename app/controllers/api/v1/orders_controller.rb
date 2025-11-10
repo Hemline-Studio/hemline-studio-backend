@@ -99,7 +99,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
     end
 
     if errors.any?
-      render_error(errors, "Failed to create orders", :unprocessable_entity)
+      render_error(errors, "Failed to create orders", :unprocessable_content)
     else
       serialized_orders = created_orders.map { |order| OrderSerializer.new(order).as_json }
       render_success({ orders: serialized_orders }, "#{created_orders.count} order(s) created successfully", :created)
@@ -133,7 +133,7 @@ class Api::V1::OrdersController < Api::V1::BaseController
     end
 
     if errors.any?
-      render_error(errors, "Failed to create orders", :unprocessable_entity)
+      render_error(errors, "Failed to create orders", :unprocessable_content)
     else
       serialized_orders = created_orders.map { |order| OrderSerializer.new(order).as_json }
       render_success({ orders: serialized_orders }, "#{created_orders.count} order(s) created successfully", :created)

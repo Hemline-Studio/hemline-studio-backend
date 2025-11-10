@@ -23,7 +23,7 @@ class Api::V1::AuthController < ApplicationController
     result = AuthService.authenticate_user!(email)
 
     if !result[:success]
-      render json: { errors: [ result[:message] ] }, status: :unprocessable_entity
+      render json: { errors: [ result[:message] ] }, status: :unprocessable_content
       return
     end
 
@@ -67,7 +67,7 @@ class Api::V1::AuthController < ApplicationController
         data: { user: user_data(result[:user]), token: result[:token] }
       }
     else
-      render json: { error: result[:message] }, status: :unprocessable_entity
+      render json: { error: result[:message] }, status: :unprocessable_content
     end
   end
 
@@ -90,7 +90,7 @@ class Api::V1::AuthController < ApplicationController
         data: { user: user_data(result[:user]), token: result[:token] }
       }
     else
-      render json: { error: result[:message] }, status: :unprocessable_entity
+      render json: { success: false, errors: [ result[:message] ] }, status: :unprocessable_content
     end
   end
 

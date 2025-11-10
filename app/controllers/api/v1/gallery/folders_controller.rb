@@ -79,7 +79,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       render json: {
         message: "Failed to create folder",
         errors: folder.errors.full_messages
-      }, status: :unprocessable_entity
+      }, status: :unprocessable_content
     end
   rescue ActionController::ParameterMissing => e
     render json: {
@@ -131,7 +131,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       render json: {
         message: "Failed to update folder",
         errors: @folder.errors.full_messages
-      }, status: :unprocessable_entity
+      }, status: :unprocessable_content
     end
   rescue ActionController::ParameterMissing => e
     render json: {
@@ -291,7 +291,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       render json: {
         message: "Failed to set cover image",
         errors: @folder.errors.full_messages
-      }, status: :unprocessable_entity
+      }, status: :unprocessable_content
     end
   end
 
@@ -350,7 +350,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
         render json: {
           message: "Failed to send email",
           errors: [ e.message ]
-        }, status: :unprocessable_entity
+        }, status: :unprocessable_content
       end
 
     when "client"
@@ -417,7 +417,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
         render json: {
           message: "Failed to send email",
           errors: [ e.message ]
-        }, status: :unprocessable_entity
+        }, status: :unprocessable_content
       end
 
     when "link"

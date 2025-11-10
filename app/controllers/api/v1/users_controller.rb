@@ -29,7 +29,7 @@ class Api::V1::UsersController < Api::V1::BaseController
         success: false,
         errors: @user.errors.full_messages,
         message: "Failed to update user"
-      }, status: :unprocessable_entity
+      }, status: :unprocessable_content
     end
   end
 
@@ -85,14 +85,14 @@ class Api::V1::UsersController < Api::V1::BaseController
           success: false,
           errors: @user.errors.full_messages,
           message: "Failed to update business image"
-        }, status: :unprocessable_entity
+        }, status: :unprocessable_content
       end
     rescue StandardError => e
       render json: {
         success: false,
         message: "Failed to upload image",
         errors: [ e.message ]
-      }, status: :unprocessable_entity
+      }, status: :unprocessable_content
     end
   end
 

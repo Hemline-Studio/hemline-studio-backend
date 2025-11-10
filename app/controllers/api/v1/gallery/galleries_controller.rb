@@ -88,7 +88,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
       render json: {
         message: "All uploads failed",
         errors: failed_uploads
-      }, status: :unprocessable_entity
+      }, status: :unprocessable_content
     else
       render json: {
         message: "Some images uploaded successfully",
@@ -145,7 +145,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
       render json: {
         message: "Failed to update gallery image",
         errors: @gallery.errors.full_messages
-      }, status: :unprocessable_entity
+      }, status: :unprocessable_content
     end
   rescue ActionController::ParameterMissing => e
     render json: {
