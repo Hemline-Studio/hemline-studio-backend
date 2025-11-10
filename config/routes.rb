@@ -17,6 +17,9 @@ Rails.application.routes.draw do
       # Health check route
       get "health", to: "health#check"
 
+      # Waitlist routes
+      post "waitlist", to: "waitlists#create"
+
       # Authentication routes
       post "auth/request_magic_link", to: "auth#request_magic_link"
       post "auth/verify_code", to: "auth#verify_code"
