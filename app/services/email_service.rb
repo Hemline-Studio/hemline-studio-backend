@@ -152,11 +152,12 @@ class EmailService
     html_body = render_template(template, data)
 
     # Use Resend in production, Gmail SMTP in development
-    if Rails.env.production?
-      send_with_resend(to: to, subject: subject, html: html_body)
-    else
-      send_with_mail(to: to, subject: subject, html: html_body, template: template)
-    end
+    # Gmail SMTP has issues sending emails
+    # if Rails.env.production?
+    send_with_resend(to: to, subject: subject, html: html_body)
+    # else
+    #   send_with_mail(to: to, subject: subject, html: html_body, template: template)
+    # end
 
     true
   rescue StandardError => e
@@ -201,20 +202,21 @@ class EmailService
       delivery_method :smtp, SMTP_SETTINGS
     end
 
+    # TODO: This is failing for some reason
     # Create and send the email
-    mail = Mail.new do
-      from     ENV["GMAIL_USERNAME"] || "hello@hemline.studio"
-      to       to
-      subject  subject
+    # mail = Mail.new do
+    #   from     ENV["GMAIL_USERNAME"] || "hello@hemline.studio"
+    #   to       to
+    #   subject  subject
 
-      html_part do
-        content_type "text/html; charset=UTF-8"
-        body html
-      end
-    end
+    #   html_part do
+    #     content_type "text/html; charset=UTF-8"
+    #     body html
+    #   end
+    # end
 
     # Send the email
-    mail.deliver!
+    # mail.deliver!
 
     # Log email in development
     Rails.logger.info "=== EMAIL SENT ==="
