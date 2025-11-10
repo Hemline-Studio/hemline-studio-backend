@@ -14,12 +14,15 @@ class Api::V1::WaitlistsController < ApplicationController
 
     waitlist = Waitlist.new(email: email)
 
-    email_result = EmailService.send_waitlist_confirmation(waitlist)
+    if waitlist.save
+      # Send confirmation email (non-blocking)
+      email_result = EmailService.send_waitlist_confirmation(waitlist)
 
-    if !email_result[:success]
-      Rails.logger.error "Failed to send waitlist email: #{email_result[:message]}"
-      # Continue even if email fails - user can still use the code
-    else
+      if !email_result[:success]
+        Rails.logger.error "Failed to send waitlist email: #{email_result[:message]}"
+        # Continue even if email fails - user was still added to waitlist
+      end
+
       render json: {
         success: true,
         message: "Successfully added to waitlist",
@@ -27,9 +30,8 @@ class Api::V1::WaitlistsController < ApplicationController
           email: waitlist.email,
           joined_at: waitlist.created_at
         }
-        }, status: :created
-    end
-
+      }, status: :created
+    else
       # Check if it's a duplicate email
       if waitlist.errors[:email].include?("has already been taken")
         render json: {
@@ -43,5 +45,6 @@ class Api::V1::WaitlistsController < ApplicationController
           errors: waitlist.errors.full_messages
         }, status: :unprocessable_entity
       end
+    end
   end
 end
