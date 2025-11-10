@@ -65,6 +65,36 @@ class EmailService
     }
   end
 
+  def self.send_waitlist_confirmation(waitlist)
+    # Prepare template data
+
+    # Send email with HTML template
+    send_email(
+      to: waitlist.email,
+      subject: "You're On The List! 🎉",
+      template: :waitlist_confirmation,
+    )
+
+    # Return success
+    {
+      success: true,
+      message: "Email Sent",
+      data: {
+        email: waitlist.email,
+        joined_at: waitlist.created_at
+      }
+    }
+
+  rescue StandardError => e
+    Rails.logger.error "Email sending failed: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+
+    {
+      success: false,
+      message: "Failed to send email: #{e.message}"
+    }
+  end
+
   def self.send_welcome_email(user, base_url = nil)
     base_url ||= ENV["CLIENT_BASE_URL"]
     # Fallback greeting when first/last name may be blank
@@ -153,11 +183,12 @@ class EmailService
 
     # Use Resend in production, Gmail SMTP in development
     # Gmail SMTP has issues sending emails
-    # if Rails.env.production?
-    send_with_resend(to: to, subject: subject, html: html_body)
-    # else
-    #   send_with_mail(to: to, subject: subject, html: html_body, template: template)
-    # end
+
+    if Rails.env.production?
+      send_with_resend(to: to, subject: subject, html: html_body)
+    else
+      send_with_mail(to: to, subject: subject, html: html_body, template: template)
+    end
 
     true
   rescue StandardError => e

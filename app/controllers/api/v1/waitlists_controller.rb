@@ -15,6 +15,8 @@ class Api::V1::WaitlistsController < ApplicationController
     waitlist = Waitlist.new(email: email)
 
     if waitlist.save
+      EmailService.send_waitlist_confirmation(waitlist)
+
       render json: {
         success: true,
         message: "Successfully added to waitlist",
@@ -23,14 +25,14 @@ class Api::V1::WaitlistsController < ApplicationController
           joined_at: waitlist.created_at
         }
       }, status: :created
+
     else
       # Check if it's a duplicate email
       if waitlist.errors[:email].include?("has already been taken")
         render json: {
           success: false,
-          message: "Email already on waitlist",
-          errors: [ "This email is already registered on our waitlist" ]
-        }, status: :unprocessable_entity
+          message: "You are already on the waitlist"
+        }, status: :ok
       else
         render json: {
           success: false,
