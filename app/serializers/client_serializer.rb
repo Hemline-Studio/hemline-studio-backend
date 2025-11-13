@@ -8,14 +8,16 @@ class ClientSerializer
     [ client.first_name, client.last_name ].compact.join(" ").strip
   end
 
-  # Include all new measurements, converted to display format
-  Client.measurement_fields.each do |measurement|
-    attribute measurement.to_sym do |client|
+  # Measurements as nested object
+  attribute :measurements do |client|
+    measurements = {}
+    Client.measurement_fields.each do |measurement|
       value = client.send(measurement)
       next unless value
 
-      client.measurement_unit == "inches" ? (value / 2.54).round(2) : value.to_f
+      measurements[measurement] = client.measurement_unit == "inches" ? (value / 2.54).round(2) : value.to_f
     end
+    measurements
   end
 
   # Custom field values

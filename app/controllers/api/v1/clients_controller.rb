@@ -50,7 +50,14 @@ class Api::V1::ClientsController < Api::V1::BaseController
 
   # POST /api/v1/clients
   def create
-    @client = current_user.clients.build(client_params)
+    # Extract and separate data
+    permitted_params = client_params.except(:measurements)
+    measurements_data = extract_measurements_params
+
+    @client = current_user.clients.build(permitted_params)
+
+    # Assign measurements to client
+    assign_measurements_to_client(@client, measurements_data)
 
     # Extract custom fields
     custom_fields_data = extract_custom_fields_params
@@ -83,20 +90,16 @@ class Api::V1::ClientsController < Api::V1::BaseController
 
   # PATCH /api/v1/clients/:id
   def update
-    if @client.update(client_params)
+    # Extract and separate data
+    permitted_params = client_params.except(:measurements)
+    measurements_data = extract_measurements_params
+
+    # Assign measurements to client
+    assign_measurements_to_client(@client, measurements_data) if measurements_data.any?
+
+    if @client.update(permitted_params)
       # Extract custom fields safely - same as create method
-      custom_fields_data = params[:client][:custom_fields] if params[:client] && params[:client][:custom_fields]
-
-      # Convert ActionController::Parameters to hash if needed
-      if custom_fields_data.respond_to?(:to_unsafe_h)
-        custom_fields_data = custom_fields_data.to_unsafe_h
-      elsif custom_fields_data.respond_to?(:to_h)
-        custom_fields_data = custom_fields_data.to_h
-      end
-
-      # Ensure it's a hash, not an array or other type
-      custom_fields_data = {} unless custom_fields_data.is_a?(Hash)
-
+      custom_fields_data = extract_custom_fields_params
 
       # Handle custom fields using the same method as create
       save_custom_fields(@client, custom_fields_data) if custom_fields_data.any?
@@ -150,15 +153,17 @@ class Api::V1::ClientsController < Api::V1::BaseController
   def client_params
     params.require(:client).permit(
       :first_name, :last_name, :gender, :measurement_unit, :phone_number, :email,
-      :shoulder_width, :bust_chest, :round_underbust, :neck_circumference,
-      :armhole_circumference, :arm_length_full, :arm_length_full_three_quarter,
-      :sleeve_length, :round_sleeve_bicep, :elbow_circumference, :wrist_circumference,
-      :top_length, :bust_point_nipple_to_nipple, :shoulder_to_bust_point,
-      :shoulder_to_waist, :round_chest_upper_bust, :back_width, :back_length,
-      :tommy_waist, :waist, :high_hip, :hip_full, :lap_thigh, :knee_circumference,
-      :calf_circumference, :ankle_circumference, :skirt_length, :trouser_length_outseam,
-      :inseam, :crotch_depth, :waist_to_hip, :waist_to_floor, :slit_height,
-      :bust_apex_to_waist
+      measurements: [
+        :shoulder_width, :bust_chest, :round_underbust, :neck_circumference,
+        :armhole_circumference, :arm_length_full, :arm_length_full_three_quarter,
+        :sleeve_length, :round_sleeve_bicep, :elbow_circumference, :wrist_circumference,
+        :top_length, :bust_point_nipple_to_nipple, :shoulder_to_bust_point,
+        :shoulder_to_waist, :round_chest_upper_bust, :back_width, :back_length,
+        :tommy_waist, :waist, :high_hip, :hip_full, :lap_thigh, :knee_circumference,
+        :calf_circumference, :ankle_circumference, :skirt_length, :trouser_length_outseam,
+        :inseam, :crotch_depth, :waist_to_hip, :waist_to_floor, :slit_height,
+        :bust_apex_to_waist
+      ]
     )
   end
 
@@ -201,17 +206,10 @@ class Api::V1::ClientsController < Api::V1::BaseController
       end
 
       begin
-        # Check if a record already exists
-        existing_ccfv = client.client_custom_field_values.find_by(custom_field: custom_field)
         client.set_custom_field_value(custom_field, value)
-
-        # Verify it was saved
-        saved_ccfv = client.client_custom_field_values.find_by(custom_field: custom_field)
-
-      rescue ActiveRecord::RecordInvalid => e
-
-      rescue StandardError => e
-
+      rescue ActiveRecord::RecordInvalid, StandardError
+        # Silently continue on error
+        next
       end
     end
   end
@@ -266,5 +264,34 @@ class Api::V1::ClientsController < Api::V1::BaseController
   def valid_uuid?(string)
     uuid_regex = /\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
     !!(string =~ uuid_regex)
+  end
+
+  # Extract measurements from nested structure
+  def extract_measurements_params
+    return {} unless params[:client] && params[:client][:measurements]
+
+    measurements_data = params[:client][:measurements]
+
+    measurements_data = if measurements_data.respond_to?(:to_unsafe_h)
+      measurements_data.to_unsafe_h
+    elsif measurements_data.respond_to?(:to_h)
+      measurements_data.to_h
+    else
+      {}
+    end
+
+    measurements_data.is_a?(Hash) ? measurements_data : {}
+  end
+
+  # Assign measurements to client from nested structure
+  def assign_measurements_to_client(client, measurements_data)
+    return unless measurements_data.is_a?(Hash)
+
+    Client.measurement_fields.each do |field|
+      value = measurements_data[field] || measurements_data[field.to_sym]
+      next unless value
+
+      client.public_send("#{field}=", value)
+    end
   end
 end
