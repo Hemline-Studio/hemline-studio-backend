@@ -2,7 +2,7 @@ class JwtService
   SECRET_KEY = Rails.application.credentials.secret_key_base || "fallback_secret_key"
 
   # Token expiration times
-  ACCESS_TOKEN_EXPIRATION = 10.seconds
+  ACCESS_TOKEN_EXPIRATION = 1.hour
   REFRESH_TOKEN_EXPIRATION = 30.days
 
   def self.encode(payload, exp = ACCESS_TOKEN_EXPIRATION.from_now)
