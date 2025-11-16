@@ -38,21 +38,24 @@ module UserDataConcern
   end
 
   def authenticate_user!
-    token = request.headers["Authorization"]&.split(" ")&.last
+    access_token = request.headers["Authorization"]&.split(" ")&.last
 
-    if token.blank?
+    if access_token.blank?
       render json: { error: "Authorization token required" }, status: :unauthorized
       return
     end
 
-    result = AuthService.verify_jwt_token(token)
+    result = AuthService.verify_jwt_token(access_token, "access")
 
     unless result[:success]
-      render json: { error: result[:message] }, status: :unauthorized
+      status_code = result[:expired] ? :unauthorized : :unauthorized
+      response_data = { success: false, messages: result[:messages] || [ "Authentication failed" ] }
+      response_data[:expired] = true if result[:expired]
+      render json: response_data, status: status_code
       return
     end
 
-    @token = token
-    @current_user = result[:user] # This is jsut like a middleware in nodejs so that the current_user can be accessed once initialized in the HTTP request
+    @access_token = access_token
+    @current_user = result[:user] # This is just like a middleware in nodejs so that the current_user can be accessed once initialized in the HTTP request
   end
 end

@@ -23,7 +23,7 @@ class Api::V1::AuthController < ApplicationController
     result = AuthService.authenticate_user!(email)
 
     if !result[:success]
-      render json: { errors: [ result[:message] ] }, status: :unprocessable_content
+      render json: { errors: result[:messages] || [ "Authentication failed" ] }, status: :unprocessable_content
       return
     end
 
@@ -60,14 +60,22 @@ class Api::V1::AuthController < ApplicationController
     result = AuthService.verify_code(code)
 
     if result[:success]
+      # Set refresh token as httpOnly cookie
+      set_refresh_token_cookie(result[:refresh_token])
 
       render json: {
-        message: result[:message],
+        messages: result[:messages],
         success: true,
-        data: { user: user_data(result[:user]), token: result[:token] }
+        data: {
+          user: user_data(result[:user]),
+          access_token: result[:access_token]
+        }
       }
     else
-      render json: { error: result[:message] }, status: :unprocessable_content
+      status_code = result[:expired] ? :unauthorized : :unprocessable_content
+      response_data = { success: false, messages: result[:messages] || [ "Verification failed" ] }
+      response_data[:expired] = true if result[:expired]
+      render json: response_data, status: status_code
     end
   end
 
@@ -83,14 +91,22 @@ class Api::V1::AuthController < ApplicationController
     result = AuthService.verify_magic_link(token)
 
     if result[:success]
+      # Set refresh token as httpOnly cookie
+      set_refresh_token_cookie(result[:refresh_token])
 
       render json: {
-        message: result[:message],
+        messages: result[:messages],
         success: true,
-        data: { user: user_data(result[:user]), token: result[:token] }
+        data: {
+          user: user_data(result[:user]),
+          access_token: result[:access_token]
+        }
       }
     else
-      render json: { success: false, errors: [ result[:message] ] }, status: :unprocessable_content
+      status_code = result[:expired] ? :unauthorized : :unprocessable_content
+      response_data = { success: false, messages: result[:messages] || [ "Magic link verification failed" ] }
+      response_data[:expired] = true if result[:expired]
+      render json: response_data, status: status_code
     end
   end
 
@@ -99,18 +115,47 @@ class Api::V1::AuthController < ApplicationController
     render json: {
       message: "User data retrieved successfully",
       success: true,
-      data: { user: user_data(), token: @token }
+      data: { user: user_data(), access_token: @access_token }
     }
+  end
+
+  # POST /api/v1/auth/refresh
+  def refresh
+    refresh_token = cookies[:refresh_token]
+
+    if refresh_token.blank?
+      render json: { errors: [ "Refresh token not found" ] }, status: :unauthorized
+      return
+    end
+
+    result = AuthService.refresh_access_token(refresh_token)
+
+    if result[:success]
+      render json: {
+        messages: result[:messages],
+        success: true,
+        data: {
+          user: user_data(result[:user]),
+          access_token: result[:access_token]
+        }
+      }
+    else
+      # Clear invalid refresh token cookie
+      clear_refresh_token_cookie
+      status_code = result[:expired] ? :unauthorized : :unauthorized
+      response_data = { success: false, messages: result[:messages] || [ "Token refresh failed" ] }
+      response_data[:expired] = true if result[:expired]
+      render json: response_data, status: status_code
+    end
   end
 
   # DELETE /api/v1/auth/logout
   def logout
-    # Remove token server-side by deleting the token record
-    token = request.headers["Authorization"]&.split(" ")&.last
-    if token.present?
-      token_record = Token.find_by(token: token)
-      token_record&.destroy
-    end
+    # Remove tokens server-side by deleting all token records for the user
+    Token.revoke_user_tokens(@current_user)
+
+    # Clear refresh token cookie
+    clear_refresh_token_cookie
 
     render json: { message: "Logged out successfully" }
   end
@@ -119,5 +164,25 @@ class Api::V1::AuthController < ApplicationController
 
   def current_user
     @current_user
+  end
+
+  def set_refresh_token_cookie(refresh_token)
+    response.headers["Set-Cookie"] = "refresh_token=#{refresh_token}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax"
+
+    cookies[:refresh_token] = {
+      value: refresh_token,
+      httponly: true,
+      secure: true, # Only secure in production
+      same_site: :lax,
+      expires: 30.days.from_now
+    }
+  end
+
+  def clear_refresh_token_cookie
+    cookies.delete(:refresh_token, {
+      httponly: true,
+      secure: true,
+      same_site: :lax
+    })
   end
 end

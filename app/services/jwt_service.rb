@@ -1,9 +1,23 @@
 class JwtService
   SECRET_KEY = Rails.application.credentials.secret_key_base || "fallback_secret_key"
 
-  def self.encode(payload, exp = 12.hours.from_now)
+  # Token expiration times
+  ACCESS_TOKEN_EXPIRATION = 10.seconds
+  REFRESH_TOKEN_EXPIRATION = 30.days
+
+  def self.encode(payload, exp = ACCESS_TOKEN_EXPIRATION.from_now)
     payload[:exp] = exp.to_i
     JWT.encode(payload, SECRET_KEY)
+  end
+
+  def self.encode_access_token(payload)
+    payload[:token_type] = "access"
+    encode(payload, ACCESS_TOKEN_EXPIRATION.from_now)
+  end
+
+  def self.encode_refresh_token(payload)
+    payload[:token_type] = "refresh"
+    encode(payload, REFRESH_TOKEN_EXPIRATION.from_now)
   end
 
   def self.decode(token)
@@ -23,5 +37,9 @@ class JwtService
 
   def self.valid_payload?(payload)
     payload && payload[:exp] && Time.at(payload[:exp]) > Time.current
+  end
+
+  def self.token_type(payload)
+    payload[:token_type] if payload
   end
 end

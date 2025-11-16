@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_10_194547) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_16_131737) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -161,7 +161,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_10_194547) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
+    t.string "token_type", default: "access", null: false
     t.index ["token"], name: "index_tokens_on_token", unique: true
+    t.index ["user_id", "token_type"], name: "index_tokens_on_user_id_and_token_type"
     t.index ["user_id"], name: "index_tokens_on_user_id"
   end
 

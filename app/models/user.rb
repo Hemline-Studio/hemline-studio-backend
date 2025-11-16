@@ -3,6 +3,7 @@ class User < ApplicationRecord
   self.primary_key = :id
 
   has_many :auth_codes, dependent: :destroy
+  has_many :tokens, dependent: :destroy
   has_many :clients, dependent: :destroy
   has_many :custom_fields, dependent: :destroy
   has_many :folders, dependent: :destroy

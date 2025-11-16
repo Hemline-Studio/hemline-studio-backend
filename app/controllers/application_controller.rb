@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::API
+  include ActionController::Cookies
+
   rescue_from ActionDispatch::Http::Parameters::ParseError, with: :handle_parse_error
 
   def not_found
