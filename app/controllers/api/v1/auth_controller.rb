@@ -12,12 +12,12 @@ class Api::V1::AuthController < ApplicationController
       return
     end
 
-    allowed_emails = [ "tzwizzycollections@gmail.com", "wisdomiyamu@gmail.com", "ibukunotusanya14@gmail.com", "fadaofficial01@gmail.com", "wisdom@hemline.studio", "adetunji@hemline.studio", "subomi@hemline.studio", "hello@hemline.studio", "adetunjidummy@gmail.com", "adetunjiadeyinka29@gmail.com" ]
+    # allowed_emails = [ "tzwizzycollections@gmail.com", "wisdomiyamu@gmail.com", "ibukunotusanya14@gmail.com", "fadaofficial01@gmail.com", "wisdom@hemline.studio", "adetunji@hemline.studio", "subomi@hemline.studio", "hello@hemline.studio", "adetunjidummy@gmail.com", "adetunjiadeyinka29@gmail.com" ]
 
-    if email.present? && !allowed_emails.include?(email)
-      render json: { errors: [ "Unauthorized email address" ] }, status: :unauthorized
-      return
-    end
+    # if email.present? && !allowed_emails.include?(email)
+    #   render json: { errors: [ "Unauthorized email address" ] }, status: :unauthorized
+    #   return
+    # end
 
     # Authenticate or create user
     result = AuthService.authenticate_user!(email)
