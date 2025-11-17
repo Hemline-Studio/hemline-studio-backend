@@ -184,11 +184,12 @@ class EmailService
     # Use Resend in production, Gmail SMTP in development
     # Gmail SMTP has issues sending emails
 
-    if Rails.env.production?
-      send_with_resend(to: to, subject: subject, html: html_body)
-    else
-      send_with_mail(to: to, subject: subject, html: html_body, template: template)
-    end
+    send_with_resend(to: to, subject: subject, html: html_body)
+
+    # if Rails.env.production?
+    # else
+    #   send_with_mail(to: to, subject: subject, html: html_body, template: template)
+    # end
 
     true
   rescue StandardError => e
