@@ -1,7 +1,7 @@
 # Fix SSL/TLS connection issues with external APIs (like Resend)
 # This is especially important on macOS with Ruby 3.x
 
-require 'openssl'
+require "openssl"
 
 # Set minimum TLS version to 1.2 (required by most modern APIs)
 OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:min_version] = OpenSSL::SSL::TLS1_2_VERSION
