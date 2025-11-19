@@ -17,14 +17,14 @@ class AuthService
       success: true,
       user: user,
       auth_code: auth_code,
-      messages: [ "Authentication code generated successfully" ]
+      messages:  "Authentication code generated successfully"
     }
   end
 
   def self.verify_code(code)
     auth_code = AuthCode.valid_codes.find_by(code: code)
 
-    return { success: false, messages: [ "Invalid or expired code" ] } unless auth_code
+    return { success: false, message: "Invalid or expired code", errors: [ "Invalid or expired code" ] } unless auth_code
 
     # Mark code as used
     auth_code.use!
@@ -32,13 +32,25 @@ class AuthService
     # Generate access and refresh tokens
     tokens = generate_token_pair(auth_code.user)
 
-    {
-      success: true,
-      user: auth_code.user,
-      access_token: tokens[:access_token],
-      refresh_token: tokens[:refresh_token],
-      messages: [ "Authentication successful" ]
-    }
+    if auth_code.user.to_be_deleted
+      {
+        success: true,
+        access_token: tokens[:access_token],
+        to_be_deleted: true,
+        date_requested_for_deletion: auth_code.user.date_requested_for_deletion,
+        messages:  "Account scheduled for deletion"
+      }
+    else
+      {
+        success: true,
+        user: auth_code.user,
+        access_token: tokens[:access_token],
+        refresh_token: tokens[:refresh_token],
+        to_be_deleted: false,
+        date_requested_for_deletion: nil,
+        messages: "Authentication successful"
+      }
+    end
   end
 
   def self.verify_magic_link(token)
@@ -53,13 +65,25 @@ class AuthService
     # Generate access and refresh tokens
     tokens = generate_token_pair(auth_code.user)
 
-    {
-      success: true,
-      user: auth_code.user,
-      access_token: tokens[:access_token],
-      refresh_token: tokens[:refresh_token],
-      messages:  "Authentication successful"
-    }
+    if auth_code.user.to_be_deleted
+      {
+        success: true,
+        access_token: tokens[:access_token],
+        to_be_deleted: true,
+        date_requested_for_deletion: auth_code.user.date_requested_for_deletion,
+        messages: "Account scheduled for deletion"
+      }
+    else
+      {
+        success: true,
+        user: auth_code.user,
+        access_token: tokens[:access_token],
+        refresh_token: tokens[:refresh_token],
+        to_be_deleted: false,
+        date_requested_for_deletion: nil,
+        messages:  "Authentication successful"
+      }
+    end
   end
 
   def self.verify_jwt_token(token, expected_type = "access")
@@ -92,6 +116,10 @@ class AuthService
       token_record: token_record,
       errors: [ "Token valid" ]
     }
+  end
+
+  def self.generate_tokens_for_user(user)
+    generate_token_pair(user)
   end
 
   def self.refresh_access_token(refresh_token)

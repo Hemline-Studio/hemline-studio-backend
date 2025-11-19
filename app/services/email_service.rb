@@ -1,4 +1,3 @@
-
 require "resend"
 require "mail"
 
@@ -173,6 +172,35 @@ class EmailService
     {
       success: false,
       message: "Failed to send folder share email: #{e.message}"
+    }
+  end
+
+  def self.send_account_deletion_request(user)
+    # Prepare template data
+    template_data = {
+      user: user
+    }
+
+    # Send email with HTML template
+    send_email(
+      to: user.email,
+      subject: "Account Deletion Request",
+      template: :account_deletion_request,
+      data: template_data
+    )
+
+    # Return success
+    {
+      success: true,
+      message: "Account deletion request email sent successfully"
+    }
+  rescue StandardError => e
+    Rails.logger.error "Account deletion request email sending failed: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+
+    {
+      success: false,
+      message: "Failed to send account deletion request email: #{e.message}"
     }
   end
 

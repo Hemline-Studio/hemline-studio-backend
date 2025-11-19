@@ -1,7 +1,7 @@
 class Api::V1::AuthController < ApplicationController
   include UserDataConcern
 
-  before_action :authenticate_user!, only: [ :profile, :logout ] # This is basically a middleware
+  before_action :authenticate_user!, only: [ :profile, :logout, :request_delete_account, :cancel_delete_account, :delete_all_accounts ] # This is basically a middleware
 
   # POST /api/v1/auth/request_magic_link
   def request_magic_link
@@ -61,15 +61,19 @@ class Api::V1::AuthController < ApplicationController
 
     if result[:success]
       # Set refresh token as httpOnly cookie
-      set_refresh_token_cookie(result[:refresh_token])
+      set_refresh_token_cookie(result[:refresh_token]) if result[:refresh_token]
+
+      data = {
+        access_token: result[:access_token],
+        to_be_deleted: result[:to_be_deleted],
+        date_requested_for_deletion: result[:date_requested_for_deletion]
+      }
+      data[:user] = user_data(result[:user]) if result[:user]
 
       render json: {
         messages: result[:messages],
         success: true,
-        data: {
-          user: user_data(result[:user]),
-          access_token: result[:access_token]
-        }
+        data: data
       }
     else
       status_code = result[:expired] ? :unauthorized : :unprocessable_content
@@ -92,19 +96,23 @@ class Api::V1::AuthController < ApplicationController
 
     if result[:success]
       # Set refresh token as httpOnly cookie
-      set_refresh_token_cookie(result[:refresh_token])
+      set_refresh_token_cookie(result[:refresh_token]) if result[:refresh_token]
+
+      data = {
+        access_token: result[:access_token],
+        to_be_deleted: result[:to_be_deleted],
+        date_requested_for_deletion: result[:date_requested_for_deletion]
+      }
+      data[:user] = user_data(result[:user]) if result[:user]
 
       render json: {
         messages: result[:messages],
         success: true,
-        data: {
-          user: user_data(result[:user]),
-          access_token: result[:access_token]
-        }
+        data: data
       }
     else
       status_code = result[:expired] ? :unauthorized : :unprocessable_content
-      response_data = { success: false, messages: result[:messages] || [ "Magic link verification failed" ] }
+      response_data = { success: false, messages: result[:messages] || "Magic link verification failed"  }
       response_data[:expired] = true if result[:expired]
       render json: response_data, status: status_code
     end
@@ -115,7 +123,12 @@ class Api::V1::AuthController < ApplicationController
     render json: {
       message: "User data retrieved successfully",
       success: true,
-      data: { user: user_data(), access_token: @access_token }
+      data: {
+        user: user_data(),
+        access_token: @access_token,
+        to_be_deleted: @current_user.to_be_deleted,
+        date_requested_for_deletion: @current_user.date_requested_for_deletion
+      }
     }
   end
 
@@ -136,7 +149,9 @@ class Api::V1::AuthController < ApplicationController
         success: true,
         data: {
           user: user_data(result[:user]),
-          access_token: result[:access_token]
+          access_token: result[:access_token],
+          to_be_deleted: result[:to_be_deleted],
+          date_requested_for_deletion: result[:date_requested_for_deletion]
         }
       }
     else
@@ -160,6 +175,69 @@ class Api::V1::AuthController < ApplicationController
     render json: { message: "Logged out successfully" }
   end
 
+  # POST /api/v1/auth/request_delete_account
+  def request_delete_account
+    @current_user.update!(
+      to_be_deleted: true,
+      date_requested_for_deletion: Time.current
+    )
+
+    # Send email notification
+    EmailService.send_account_deletion_request(@current_user)
+
+    # Revoke all tokens
+    Token.revoke_user_tokens(@current_user)
+
+    # Clear refresh token cookie
+    clear_refresh_token_cookie
+
+    render json: {
+      success: true,
+      message: "Account marked for deletion. It will be permanently deleted in 7 days."
+    }
+  end
+
+  # POST /api/v1/auth/cancel_delete_account
+  def cancel_delete_account
+    @current_user.update!(
+      to_be_deleted: false,
+      date_requested_for_deletion: nil
+    )
+
+    tokens = AuthService.generate_tokens_for_user(@current_user)
+    set_refresh_token_cookie(tokens[:refresh_token])
+
+    render json: {
+      success: true,
+      message: "Account deletion request cancelled.",
+      data: {
+        user: user_data(@current_user),
+        access_token: tokens[:access_token],
+        to_be_deleted: false
+      }
+    }
+  end
+
+  # DELETE /api/v1/auth/delete_all_accounts
+  def delete_all_accounts
+    unless @current_user.email == "adetunji@hemline.studio"
+      render json: { error: "Unauthorized" }, status: :forbidden
+      return
+    end
+
+    # Find users marked for deletion more than 7 days ago
+    users_to_delete = User.where(to_be_deleted: true)
+                          .where("date_requested_for_deletion <= ?", 7.days.ago)
+
+    count = users_to_delete.count
+    users_to_delete.destroy_all
+
+    render json: {
+      success: true,
+      message: "#{count} accounts deleted successfully."
+    }
+  end
+
   private
 
   def current_user
@@ -167,7 +245,11 @@ class Api::V1::AuthController < ApplicationController
   end
 
   def set_refresh_token_cookie(refresh_token)
-    response.headers["Set-Cookie"] = "refresh_token=#{refresh_token}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax"
+    response.set_header(
+      "Set-Cookie",
+      "refresh_token=#{refresh_token}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax"
+    )
+    # response.headers["Set-Cookie"] = "refresh_token=#{refresh_token}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax"
 
     cookies[:refresh_token] = {
       value: refresh_token,
@@ -179,6 +261,11 @@ class Api::V1::AuthController < ApplicationController
   end
 
   def clear_refresh_token_cookie
+    response.set_header(
+      "Set-Cookie",
+      "refresh_token=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax"
+    )
+
     cookies.delete(:refresh_token, {
       httponly: true,
       secure: true,

@@ -27,6 +27,9 @@ Rails.application.routes.draw do
       post "auth/refresh", to: "auth#refresh"
       get "auth/profile", to: "auth#profile"
       delete "auth/logout", to: "auth#logout"
+      delete "auth/request_delete_account", to: "auth#request_delete_account"
+      post "auth/cancel_delete_account", to: "auth#cancel_delete_account"
+      delete "auth/delete_all_accounts", to: "auth#delete_all_accounts"
 
       # Client routes
       resources :clients, except: [ :destroy ] do
