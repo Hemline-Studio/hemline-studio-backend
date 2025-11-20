@@ -7,7 +7,7 @@ class ApplicationController < ActionController::API
     render json: {
       success: false,
       message: "This endpoint does not exist, I don't know what you are looking for 🙄",
-      errors: ["Not Found"]
+      errors: [ "Not Found" ]
     }, status: :not_found
   end
 
@@ -17,7 +17,7 @@ class ApplicationController < ActionController::API
     render json: {
       success: false,
       message: "Malformed request body",
-      errors: ["Invalid JSON format"]
+      errors: [ "Invalid JSON format" ]
     }, status: :bad_request
   end
 end
