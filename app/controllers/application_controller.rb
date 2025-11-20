@@ -5,15 +5,19 @@ class ApplicationController < ActionController::API
 
   def not_found
     render json: {
-      status: 404,
-      error: "Not Found",
-      message: "This endpoint does not exist, I don't know what you are looking for 🙄"
+      success: false,
+      message: "This endpoint does not exist, I don't know what you are looking for 🙄",
+      errors: ["Not Found"]
     }, status: :not_found
   end
 
   private
 
   def handle_parse_error(exception)
-    render json: { error: "Malformed request body" }, status: :bad_request
+    render json: {
+      success: false,
+      message: "Malformed request body",
+      errors: ["Invalid JSON format"]
+    }, status: :bad_request
   end
 end

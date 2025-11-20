@@ -43,6 +43,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
   def create
     unless params[:folder].present?
       render json: {
+        success: false,
         message: "Folder parameters are required",
         errors: [ "folder parameter is required" ]
       }, status: :bad_request
@@ -77,12 +78,14 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       }, status: :created
     else
       render json: {
+        success: false,
         message: "Failed to create folder",
         errors: folder.errors.full_messages
       }, status: :unprocessable_content
     end
   rescue ActionController::ParameterMissing => e
     render json: {
+      success: false,
       message: "Required parameter missing",
       errors: [ e.message ]
     }, status: :bad_request
@@ -92,6 +95,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
   def update
     unless params[:folder].present?
       render json: {
+        success: false,
         message: "Folder parameters are required",
         errors: [ "folder parameter is required" ]
       }, status: :bad_request
@@ -110,12 +114,14 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
           @folder.update(cover_image: cover_image_id)
         elsif image && !@folder.has_image?(cover_image_id)
           render json: {
+            success: false,
             message: "Image is not in this folder",
             errors: [ "Cover image must be one of the images in the folder" ]
           }, status: :bad_request
           return
         elsif !image
           render json: {
+            success: false,
             message: "Image not found or doesn't belong to you",
             errors: [ "Invalid cover image ID provided" ]
           }, status: :not_found
@@ -129,12 +135,14 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       }, status: :ok
     else
       render json: {
+        success: false,
         message: "Failed to update folder",
         errors: @folder.errors.full_messages
       }, status: :unprocessable_content
     end
   rescue ActionController::ParameterMissing => e
     render json: {
+      success: false,
       message: "Required parameter missing",
       errors: [ e.message ]
     }, status: :bad_request
@@ -162,6 +170,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     if image_ids.blank?
       render json: {
+        success: false,
         message: "Image IDs are required",
         errors: [ "image_ids parameter is required" ]
       }, status: :bad_request
@@ -170,6 +179,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     if folder_ids.blank?
       render json: {
+        success: false,
         message: "Folder IDs are required",
         errors: [ "folder_ids parameter is required" ]
       }, status: :bad_request
@@ -181,6 +191,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     if images.count != image_ids.length
       render json: {
+        success: false,
         message: "Some images not found or don't belong to you",
         errors: [ "Invalid image IDs provided" ]
       }, status: :not_found
@@ -192,6 +203,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     if folders.count != folder_ids.length
       render json: {
+        success: false,
         message: "Some folders not found or don't belong to you",
         errors: [ "Invalid folder IDs provided" ]
       }, status: :not_found
@@ -220,6 +232,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     if image_ids.blank? || !image_ids.is_a?(Array) || image_ids.empty?
       render json: {
+        success: false,
         message: "Image IDs are required",
         errors: [ "image_ids parameter must be a non-empty array" ]
       }, status: :bad_request
@@ -231,6 +244,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     if images.count != image_ids.length
       render json: {
+        success: false,
         message: "Some images not found or don't belong to you",
         errors: [ "Invalid image IDs provided" ]
       }, status: :not_found
@@ -257,6 +271,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     if image_id.blank?
       render json: {
+        success: false,
         message: "Image ID is required",
         errors: [ "image_id parameter is required" ]
       }, status: :bad_request
@@ -268,6 +283,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     unless image
       render json: {
+        success: false,
         message: "Image not found or doesn't belong to you",
         errors: [ "Invalid image ID provided" ]
       }, status: :not_found
@@ -276,6 +292,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     unless @folder.has_image?(image_id)
       render json: {
+        success: false,
         message: "Image is not in this folder",
         errors: [ "Image must be in the folder to set as cover" ]
       }, status: :bad_request
@@ -289,6 +306,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       }, status: :ok
     else
       render json: {
+        success: false,
         message: "Failed to set cover image",
         errors: @folder.errors.full_messages
       }, status: :unprocessable_content
@@ -322,6 +340,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
       if email.blank?
         render json: {
+          success: false,
           message: "Email is required for email sharing",
           errors: [ "email parameter is required" ]
         }, status: :bad_request
@@ -348,6 +367,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       rescue StandardError => e
         Rails.logger.error "Failed to send folder share email: #{e.message}"
         render json: {
+          success: false,
           message: "Failed to send email",
           errors: [ e.message ]
         }, status: :unprocessable_content
@@ -358,6 +378,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
       if client_id.blank?
         render json: {
+          success: false,
           message: "Client ID is required for client sharing",
           errors: [ "client_id parameter is required" ]
         }, status: :bad_request
@@ -369,6 +390,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
       unless client
         render json: {
+          success: false,
           message: "Client not found",
           errors: [ "Client with ID #{client_id} not found" ]
         }, status: :not_found
@@ -378,6 +400,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       # Check if client has email
       if client.email.blank?
         render json: {
+          success: false,
           message: "Client does not have an email address",
           errors: [ "Cannot share via email: client has no email" ],
           data: {
@@ -415,6 +438,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
       rescue StandardError => e
         Rails.logger.error "Failed to send folder share email to client: #{e.message}"
         render json: {
+          success: false,
           message: "Failed to send email",
           errors: [ e.message ]
         }, status: :unprocessable_content
@@ -434,6 +458,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     else
       render json: {
+        success: false,
         message: "Invalid share type",
         errors: [ "share_type must be one of: email, client, link" ]
       }, status: :bad_request
@@ -447,6 +472,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
 
     unless @folder
       render json: {
+        success: false,
         message: "Folder not found",
         errors: [ "Folder with ID #{params[:id]} not found" ]
       }, status: :not_found

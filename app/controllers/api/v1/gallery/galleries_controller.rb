@@ -6,6 +6,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
   def upload
     unless params[:images].present?
       render json: {
+        success: false,
         message: "No images provided",
         errors: [ "images parameter is required" ]
       }, status: :bad_request
@@ -20,6 +21,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
     # Validate max 10 images
     if images.length > 10
       render json: {
+        success: false,
         message: "Too many images",
         errors: [ "Maximum 10 images allowed per upload" ]
       }, status: :bad_request
@@ -86,14 +88,16 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
       }, status: :created
     elsif uploaded_images.empty?
       render json: {
+        success: false,
         message: "All uploads failed",
-        errors: failed_uploads
+        errors: failed_uploads.map { |f| "#{f[:filename]}: #{f[:error]}" }
       }, status: :unprocessable_content
     else
       render json: {
+        success: false,
         message: "Some images uploaded successfully",
         data: uploaded_images,
-        errors: failed_uploads,
+        errors: failed_uploads.map { |f| "#{f[:filename]}: #{f[:error]}" },
         successCount: uploaded_images.length,
         failedCount: failed_uploads.length
       }, status: :multi_status
@@ -130,6 +134,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
   def update
     unless params[:gallery].present?
       render json: {
+        success: false,
         message: "Gallery parameters are required",
         errors: [ "gallery parameter is required" ]
       }, status: :bad_request
@@ -143,12 +148,14 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
       }, status: :ok
     else
       render json: {
+        success: false,
         message: "Failed to update gallery image",
         errors: @gallery.errors.full_messages
       }, status: :unprocessable_content
     end
   rescue ActionController::ParameterMissing => e
     render json: {
+      success: false,
       message: "Required parameter missing",
       errors: [ e.message ]
     }, status: :bad_request
@@ -166,6 +173,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
 
       if images.count != image_ids.length
         render json: {
+          success: false,
           message: "Some images not found or don't belong to you",
           errors: [ "Invalid image IDs provided" ]
         }, status: :not_found
@@ -229,6 +237,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
       }, status: :ok
     else
       render json: {
+        success: false,
         message: "Image IDs are required for bulk delete",
         errors: [ "image_ids parameter is required" ]
       }, status: :bad_request
@@ -242,6 +251,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
 
     unless @gallery
       render json: {
+        success: false,
         message: "Gallery image not found",
         errors: [ "Gallery image with ID #{params[:id]} not found" ]
       }, status: :not_found

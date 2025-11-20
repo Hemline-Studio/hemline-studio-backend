@@ -36,7 +36,8 @@ class Api::V1::WaitlistsController < ApplicationController
       if waitlist.errors[:email].include?("has already been taken")
         render json: {
           success: false,
-          message: "You are already on the waitlist"
+          message: "You are already on the waitlist",
+          errors: [ "Email has already been taken" ]
         }, status: :ok
       else
         render json: {

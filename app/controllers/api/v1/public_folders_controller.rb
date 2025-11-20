@@ -7,6 +7,7 @@ class Api::V1::PublicFoldersController < ApplicationController
 
     unless folder
       render json: {
+        success: false,
         message: "Folder not found or is not public",
         errors: [ "Invalid public_id or folder is private" ]
       }, status: :not_found
@@ -56,6 +57,7 @@ class Api::V1::PublicFoldersController < ApplicationController
 
     unless folder
       render json: {
+        success: false,
         message: "Folder not found or is not public",
         errors: [ "Invalid public_id or folder is private" ]
       }, status: :not_found

@@ -8,7 +8,11 @@ class Api::V1::AuthController < ApplicationController
     email = params[:email]&.strip&.downcase
 
     if email.blank?
-      render json: { errors: [ "Email is required" ] }, status: :bad_request
+      render json: {
+        success: false,
+        message: "Validation failed",
+        errors: [ "Email is required" ]
+      }, status: :bad_request
       return
     end
 
@@ -23,7 +27,11 @@ class Api::V1::AuthController < ApplicationController
     result = AuthService.authenticate_user!(email)
 
     if !result[:success]
-      render json: { errors: result[:messages] || [ "Authentication failed" ] }, status: :unprocessable_content
+      render json: {
+        success: false,
+        message: "Authentication failed",
+        errors: result[:messages] || [ "Authentication failed" ]
+      }, status: :unprocessable_content
       return
     end
 
@@ -53,7 +61,11 @@ class Api::V1::AuthController < ApplicationController
     code = params[:code]&.strip
 
     if code.blank?
-      render json: { error: "Code is required" }, status: :bad_request
+      render json: {
+        success: false,
+        message: "Validation failed",
+        errors: [ "Code is required" ]
+      }, status: :bad_request
       return
     end
 
@@ -77,7 +89,11 @@ class Api::V1::AuthController < ApplicationController
       }
     else
       status_code = result[:expired] ? :unauthorized : :unprocessable_content
-      response_data = { success: false, messages: result[:messages] || [ "Verification failed" ] }
+      response_data = {
+        success: false,
+        message: "Verification failed",
+        errors: result[:messages] || [ "Verification failed" ]
+      }
       response_data[:expired] = true if result[:expired]
       render json: response_data, status: status_code
     end
@@ -88,7 +104,11 @@ class Api::V1::AuthController < ApplicationController
     token = params[:token]
 
     if token.blank?
-      render json: { error: "Token is required" }, status: :bad_request
+      render json: {
+        success: false,
+        message: "Validation failed",
+        errors: [ "Token is required" ]
+      }, status: :bad_request
       return
     end
 
@@ -112,7 +132,11 @@ class Api::V1::AuthController < ApplicationController
       }
     else
       status_code = result[:expired] ? :unauthorized : :unprocessable_content
-      response_data = { success: false, messages: result[:messages] || "Magic link verification failed"  }
+      response_data = {
+        success: false,
+        message: "Magic link verification failed",
+        errors: result[:messages] || [ "Magic link verification failed" ]
+      }
       response_data[:expired] = true if result[:expired]
       render json: response_data, status: status_code
     end
@@ -137,7 +161,11 @@ class Api::V1::AuthController < ApplicationController
     refresh_token = cookies[:refresh_token]
 
     if refresh_token.blank?
-      render json: { errors: [ "Refresh token not found" ] }, status: :unauthorized
+      render json: {
+        success: false,
+        message: "Authentication failed",
+        errors: [ "Refresh token not found" ]
+      }, status: :unauthorized
       return
     end
 
@@ -158,7 +186,11 @@ class Api::V1::AuthController < ApplicationController
       # Clear invalid refresh token cookie
       clear_refresh_token_cookie
       status_code = result[:expired] ? :unauthorized : :unauthorized
-      response_data = { success: false, messages: result[:messages] || [ "Token refresh failed" ] }
+      response_data = {
+        success: false,
+        message: "Token refresh failed",
+        errors: result[:messages] || [ "Token refresh failed" ]
+      }
       response_data[:expired] = true if result[:expired]
       render json: response_data, status: status_code
     end
@@ -221,7 +253,11 @@ class Api::V1::AuthController < ApplicationController
   # DELETE /api/v1/auth/delete_all_accounts
   def delete_all_accounts
     unless @current_user.email == "adetunji@hemline.studio"
-      render json: { error: "Unauthorized" }, status: :forbidden
+      render json: {
+        success: false,
+        message: "Unauthorized",
+        errors: [ "You are not authorized to perform this action" ]
+      }, status: :forbidden
       return
     end
 
