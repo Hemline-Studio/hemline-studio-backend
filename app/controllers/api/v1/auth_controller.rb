@@ -59,6 +59,7 @@ class Api::V1::AuthController < ApplicationController
   # POST /api/v1/auth/verify_code
   def verify_code
     code = params[:code]&.strip
+    email = params[:email]&.strip&.downcase
 
     if code.blank?
       render json: {
@@ -69,7 +70,7 @@ class Api::V1::AuthController < ApplicationController
       return
     end
 
-    result = AuthService.verify_code(code)
+    result = AuthService.verify_code(code, email)
 
     if result[:success]
       # Set refresh token as httpOnly cookie

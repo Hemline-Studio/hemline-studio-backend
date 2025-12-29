@@ -656,7 +656,7 @@
 																													align="left"
 																													valign="top"
 																													style="
-																														padding: <%= (defined?(recipient_name) && recipient_name.present?) ? '0px' : '72px' %> 0px
+																														padding: <%= (defined?(sender_name) && sender_name.present?) ? '0px' : '72px' %> 0px
 																															0px 0px;
 																														height: auto;
 																													"
@@ -715,8 +715,7 @@
 																																					line-height: 110%;
 																																				"
 																																				class="pc-w620-font-size-14px"
-																																				>STEPHEN
-																																				SOWUNMI </span
+																																				><%= sender_name %> </span
 																																			><span
 																																				style="
 																																					font-family: 'Manrope',
