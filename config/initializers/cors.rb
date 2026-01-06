@@ -9,10 +9,15 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     if Rails.env.development?
       # Allow common development origins
-      origins "http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:5173", "http://192.168.1.123:3000"
+      origins "http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:5173", /http:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?/
     else
-      # Production: only hemline.studio and subdomains
-      origins(/\Ahttps:\/\/([\w-]+\.)?hemline\.studio\z/)
+      # Production: hemline.studio subdomains and mobile app origins
+      origins(
+        /\Ahttps:\/\/([\w-]+\.)?hemline\.studio\z/,
+        "capacitor://localhost",
+        "ionic://localhost",
+        "http://localhost"
+      )
     end
 
     resource "*",
