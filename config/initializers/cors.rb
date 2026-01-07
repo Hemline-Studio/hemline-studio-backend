@@ -16,7 +16,8 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
         /\Ahttps:\/\/([\w-]+\.)?hemline\.studio\z/,
         "capacitor://localhost",
         "ionic://localhost",
-        "http://localhost"
+        "http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:5173", /http:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?/
+
       )
     end
 
