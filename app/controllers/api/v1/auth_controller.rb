@@ -284,7 +284,7 @@ class Api::V1::AuthController < ApplicationController
   def set_refresh_token_cookie(refresh_token)
     response.set_header(
       "Set-Cookie",
-      "refresh_token=#{refresh_token}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax"
+      "refresh_token=#{refresh_token}; Path=/; Max-Age=5184000; HttpOnly; Secure; SameSite=Lax"
     )
     # response.headers["Set-Cookie"] = "refresh_token=#{refresh_token}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax"
 
@@ -293,7 +293,7 @@ class Api::V1::AuthController < ApplicationController
       httponly: true,
       secure: true, # Only secure in production
       same_site: :lax,
-      expires: 30.days.from_now
+      expires: 60.days.from_now
     }
   end
 

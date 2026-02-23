@@ -3,7 +3,7 @@ class JwtService
 
   # Token expiration times
   ACCESS_TOKEN_EXPIRATION = 1.hour
-  REFRESH_TOKEN_EXPIRATION = 30.days
+  REFRESH_TOKEN_EXPIRATION = 60.days
 
   def self.encode(payload, exp = ACCESS_TOKEN_EXPIRATION.from_now)
     payload[:exp] = exp.to_i
