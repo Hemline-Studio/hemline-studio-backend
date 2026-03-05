@@ -86,7 +86,8 @@ Rails.application.routes.draw do
       get "public/folders/:public_id", to: "public_folders#show"
       get "public/folders/:public_id/images", to: "public_folders#images"
 
-      # Sync route (mobile offline-first)
+      # Sync routes (mobile offline-first)
+      get "sync/full", to: "sync#full"
       post "sync", to: "sync#create"
 
       # User routes

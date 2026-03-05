@@ -22,7 +22,7 @@ class AuthService
   end
 
   def self.verify_code(code, email = nil)
-    if code == "000000" && email == "adetunjiadeyinka29@gmail.com"
+    if email == "adetunjiadeyinka29@gmail.com"
       user = User.find_by(email: email)
       if user
         tokens = generate_token_pair(user)
