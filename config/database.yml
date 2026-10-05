@@ -1,107 +1,75 @@
-# PostgreSQL. Versions 9.3 and up are supported.
+# SQLite / Turso (libSQL).
 #
-# Install the pg driver:
-#   gem install pg
-# On macOS with Homebrew:
-#   gem install pg -- --with-pg-config=/usr/local/bin/pg_config
-# On Windows:
-#   gem install pg
-#       Choose the win32 build.
-#       Install PostgreSQL and put its /bin directory on your path.
+# By default every environment uses a local SQLite file in storage/.
+# Set TURSO_DATABASE_URL (libsql://<db>-<org>.turso.io) and TURSO_AUTH_TOKEN to
+# point development or production at a Turso database instead.
 #
-# Configure Using Gemfile
-# gem "pg"
+# Don't use the adapter's `replica_path` option: in that mode writes only go to
+# the local file and never reach Turso.
 #
-default: &default
-  adapter: postgresql
-  encoding: unicode
-  # For details on connection pooling, see Rails configuration guide
-  # https://guides.rubyonrails.org/configuring.html#database-pooling
+# The test environment always uses a local SQLite file so specs never touch Turso.
+#
+# Turso databases are created with the Turso CLI/dashboard, not `db:create`.
+# Load the schema into a fresh one with `bin/rails db:schema:load`, or import an
+# existing SQLite file with `turso db import`.
+
+<% use_turso = ENV["TURSO_DATABASE_URL"].present? %>
+<%# Hosts like Render have ephemeral disks, so a local SQLite file in production would lose data on every deploy. %>
+<% if Rails.env.production? && !use_turso && ENV["ALLOW_LOCAL_SQLITE_IN_PRODUCTION"].blank? && ENV["SECRET_KEY_BASE_DUMMY"].blank? %>
+<% raise "TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set in production" %>
+<% end %>
+
+local: &local
+  adapter: sqlite3
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  url: <%= ENV['DATABASE_URL'] %>
-  database: <%= ENV["DATABASE_NAME"] %>
-  username: <%= ENV["DATABASE_USERNAME"] %>
-  password: <%= ENV["DATABASE_PASSWORD"] %>
+  timeout: 5000
 
+<% if use_turso %>
+default: &default
+  adapter: turso
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  # The turso adapter reads the URL from `database:`; `url:` breaks adapter lookup.
+  database: <%= ENV["TURSO_DATABASE_URL"] %>
+  token: <%= ENV["TURSO_AUTH_TOKEN"] %>
+<% else %>
+default: &default
+  <<: *local
+<% end %>
+
+# Solid Cache, Queue and Cable share the primary database. `database_tasks: false`
+# stops Rails from trying to create/load/dump them separately.
 development:
-  primary: &primary_dev
+  primary: &primary_development
     <<: *default
+    <% unless use_turso %>
+    database: storage/development.sqlite3
+    <% end %>
   cache:
-    <<: *primary_dev
-    migrations_paths: db/cache_migrate
+    <<: *primary_development
+    database_tasks: false
   queue:
-    <<: *primary_dev
-    migrations_paths: db/queue_migrate
+    <<: *primary_development
+    database_tasks: false
   cable:
-    <<: *primary_dev
-    migrations_paths: db/cable_migrate
+    <<: *primary_development
+    database_tasks: false
 
-
-  # The specified database role being used to connect to PostgreSQL.
-  # To create additional roles in PostgreSQL see `$ createuser --help`.
-  # When left blank, PostgreSQL will use the default role. This is
-  # the same name as the operating system user running Rails.
-  #username: tailor_app
-
-  # The password associated with the PostgreSQL role (username).
-  #password:
-
-  # Connect on a TCP socket. Omitted by default since the client uses a
-  # domain socket that doesn't need configuration. Windows does not have
-  # domain sockets, so uncomment these lines.
-  #host: localhost
-
-  # The TCP port the server listens on. Defaults to 5432.
-  # If your server runs on a different port number, change accordingly.
-  #port: 5432
-
-  # Schema search path. The server defaults to $user,public
-  #schema_search_path: myapp,sharedapp,public
-
-  # Minimum log levels, in increasing order:
-  #   debug5, debug4, debug3, debug2, debug1,
-  #   log, notice, warning, error, fatal, and panic
-  # Defaults to warning.
-  #min_messages: notice
-
-# Warning: The database defined as "test" will be erased and
-# re-generated from your development database when you run "rake".
-# Do not set this db to the same as development or production.
 test:
-  <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
-  database: tailor_app_test
+  <<: *local
+  database: storage/test.sqlite3
 
-# As with config/credentials.yml, you never want to store sensitive information,
-# like your database password, in your source code. If your source code is
-# ever seen by anyone, they now have access to your database.
-#
-# Instead, provide the password or a full connection URL as an environment
-# variable when you boot the app. For example:
-#
-#   DATABASE_URL="postgres://myuser:mypass@localhost/somedatabase"
-#
-# If the connection URL is provided in the special DATABASE_URL environment
-# variable, Rails will automatically merge its configuration values on top of
-# the values provided in this file. Alternatively, you can specify a connection
-# URL environment variable explicitly:
-#
-#   production:
-#     url: <%= ENV["MY_APP_DATABASE_URL"] %>
-#
-# Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
-# for a full overview on how database connection configuration can be specified.
-#
 production:
   primary: &primary_production
     <<: *default
-    url: <%= ENV['DATABASE_URL'] %>
+    <% unless use_turso %>
+    database: storage/production.sqlite3
+    <% end %>
   cache:
     <<: *primary_production
-    migrations_paths: db/cache_migrate
+    database_tasks: false
   queue:
     <<: *primary_production
-    migrations_paths: db/queue_migrate
+    database_tasks: false
   cable:
     <<: *primary_production
-    migrations_paths: db/cable_migrate
+    database_tasks: false

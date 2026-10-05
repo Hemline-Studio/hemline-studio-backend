@@ -187,7 +187,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
       ActiveRecord::Base.transaction do
         images.each do |image|
           # Get all folders that contain this image
-          folders = current_user.folders.where("? = ANY(image_ids)", image.id)
+          folders = current_user.folders.with_image(image.id)
 
           # Remove image from each folder
           folders.each do |folder|
@@ -215,7 +215,7 @@ class Api::V1::Gallery::GalleriesController < Api::V1::BaseController
     elsif @gallery.present?
       # Remove image from all folders it belongs to
       ActiveRecord::Base.transaction do
-        folders = current_user.folders.where("? = ANY(image_ids)", @gallery.id)
+        folders = current_user.folders.with_image(@gallery.id)
 
         folders.each do |folder|
           folder.remove_image(@gallery.id)

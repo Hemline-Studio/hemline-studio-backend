@@ -2,8 +2,11 @@ source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0.2", ">= 8.0.2.1"
-# Use postgresql as the database for Active Record
-gem "pg", "~> 1.1"
+# Use SQLite locally and Turso (libSQL) when TURSO_DATABASE_URL is set
+gem "sqlite3", ">= 2.1"
+gem "activerecord-libsql", "~> 0.1.8"
+# Only needed by db:import_from_postgres to read the old Postgres database
+gem "pg", "~> 1.1", require: false
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]

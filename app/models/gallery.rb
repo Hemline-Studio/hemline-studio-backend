@@ -56,10 +56,10 @@ class Gallery < ApplicationRecord
 
   # Class methods
   def self.in_folder(folder_id)
-    where("? = ANY(folder_ids)", folder_id)
+    where_json_array_includes(:folder_ids, folder_id)
   end
 
   def self.without_folders
-    where(folder_ids: [])
+    where("json_array_length(folder_ids) = 0")
   end
 end

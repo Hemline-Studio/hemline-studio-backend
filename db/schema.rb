@@ -11,10 +11,6 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.0].define(version: 2025_11_19_140944) do
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "pg_catalog.plpgsql"
-  enable_extension "uuid-ossp"
-
   create_table "auth_codes", force: :cascade do |t|
     t.string "code"
     t.string "token"
@@ -22,15 +18,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_140944) do
     t.datetime "used_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "user_id", null: false
+    t.string "user_id", null: false
     t.index ["code"], name: "index_auth_codes_on_code", unique: true
     t.index ["token"], name: "index_auth_codes_on_token", unique: true
     t.index ["user_id"], name: "index_auth_codes_on_user_id"
   end
 
-  create_table "client_custom_field_values", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "client_id", null: false
-    t.uuid "custom_field_id", null: false
+  create_table "client_custom_field_values", id: :string, force: :cascade do |t|
+    t.string "client_id", null: false
+    t.string "custom_field_id", null: false
     t.text "value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -39,7 +35,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_140944) do
     t.index ["custom_field_id"], name: "index_client_custom_field_values_on_custom_field_id"
   end
 
-  create_table "clients", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "clients", id: :string, force: :cascade do |t|
     t.string "gender", null: false
     t.string "measurement_unit", null: false
     t.boolean "in_trash", default: false
@@ -47,7 +43,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_140944) do
     t.string "email"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "user_id"
+    t.string "user_id"
     t.decimal "shoulder_width", precision: 10, scale: 2
     t.decimal "bust_chest", precision: 10, scale: 2
     t.decimal "round_underbust", precision: 10, scale: 2
@@ -88,41 +84,40 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_140944) do
     t.index ["user_id"], name: "index_clients_on_user_id"
   end
 
-  create_table "custom_fields", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "custom_fields", id: :string, force: :cascade do |t|
     t.string "field_name", null: false
     t.string "field_type", default: "measurement"
     t.boolean "is_active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "user_id"
+    t.string "user_id"
     t.index ["is_active"], name: "index_custom_fields_on_is_active"
     t.index ["user_id"], name: "index_custom_fields_on_user_id"
   end
 
-  create_table "folders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "folders", id: :string, force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
-    t.text "image_ids", default: [], array: true
+    t.json "image_ids", default: [], null: false
     t.string "cover_image"
-    t.uuid "user_id", null: false
+    t.string "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "folder_color", default: -> { "(floor(((random() * (9)::double precision) + (1)::double precision)))::integer" }, null: false
+    t.integer "folder_color", null: false
     t.boolean "is_public", default: false, null: false
     t.string "public_id"
-    t.index ["image_ids"], name: "index_folders_on_image_ids", using: :gin
     t.index ["public_id"], name: "index_folders_on_public_id", unique: true
     t.index ["user_id", "name"], name: "index_folders_on_user_id_and_name", unique: true
     t.index ["user_id"], name: "index_folders_on_user_id"
     t.check_constraint "folder_color >= 1 AND folder_color <= 9", name: "folder_color_range"
   end
 
-  create_table "galleries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "galleries", id: :string, force: :cascade do |t|
     t.string "file_name", null: false
     t.string "url", null: false
     t.string "public_id", null: false
-    t.text "folder_ids", default: [], array: true
-    t.uuid "user_id", null: false
+    t.json "folder_ids", default: [], null: false
+    t.string "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "description"
@@ -132,15 +127,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_140944) do
     t.string "camera_model"
     t.string "shutter_speed"
     t.integer "iso"
-    t.index ["folder_ids"], name: "index_galleries_on_folder_ids", using: :gin
     t.index ["public_id"], name: "index_galleries_on_public_id"
     t.index ["user_id", "public_id"], name: "index_galleries_on_user_id_and_public_id", unique: true
     t.index ["user_id"], name: "index_galleries_on_user_id"
   end
 
-  create_table "orders", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "client_id", null: false
-    t.uuid "user_id", null: false
+  create_table "orders", id: :string, force: :cascade do |t|
+    t.string "client_id", null: false
+    t.string "user_id", null: false
     t.string "item", null: false
     t.integer "quantity", default: 1, null: false
     t.text "notes"
@@ -160,14 +154,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_140944) do
     t.datetime "expires_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.uuid "user_id", null: false
+    t.string "user_id", null: false
     t.string "token_type", default: "access", null: false
     t.index ["token"], name: "index_tokens_on_token", unique: true
     t.index ["user_id", "token_type"], name: "index_tokens_on_user_id_and_token_type"
     t.index ["user_id"], name: "index_tokens_on_user_id"
   end
 
-  create_table "users", id: :uuid, default: -> { "uuid_generate_v4()" }, force: :cascade do |t|
+  create_table "users", id: :string, force: :cascade do |t|
     t.string "email"
     t.string "first_name"
     t.string "last_name"
@@ -177,7 +171,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_140944) do
     t.string "profession"
     t.string "business_name"
     t.text "business_address"
-    t.string "skills", default: [], array: true
+    t.json "skills", default: [], null: false
     t.string "business_image"
     t.string "business_image_public_id"
     t.string "phone_number"
@@ -186,10 +180,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_19_140944) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["has_onboarded"], name: "index_users_on_has_onboarded"
     t.index ["profession"], name: "index_users_on_profession"
-    t.index ["skills"], name: "index_users_on_skills", using: :gin
   end
 
-  create_table "waitlists", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "waitlists", id: :string, force: :cascade do |t|
     t.string "email"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

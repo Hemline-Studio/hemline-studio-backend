@@ -28,5 +28,15 @@ module TailorApp
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # Rails lets DATABASE_URL override config/database.yml for the primary database.
+    # A leftover Postgres URL would silently replace SQLite/Turso, so move it aside;
+    # db:import_from_postgres reads it from POSTGRES_DATABASE_URL.
+    if ENV["DATABASE_URL"].to_s.start_with?("postgres")
+      ENV["POSTGRES_DATABASE_URL"] = ENV["DATABASE_URL"] if ENV["POSTGRES_DATABASE_URL"].blank?
+      ENV.delete("DATABASE_URL")
+    elsif ENV["DATABASE_URL"]&.strip&.empty?
+      ENV.delete("DATABASE_URL")
+    end
   end
 end

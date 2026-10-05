@@ -152,7 +152,7 @@ class Api::V1::Gallery::FoldersController < Api::V1::BaseController
   def destroy
     # Remove folder reference from all images in this folder
     Gallery.where(user: current_user)
-           .where("? = ANY(folder_ids)", @folder.id)
+           .in_folder(@folder.id)
            .find_each do |image|
       image.remove_from_folder(@folder.id)
     end

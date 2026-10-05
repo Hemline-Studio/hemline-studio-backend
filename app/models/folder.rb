@@ -98,11 +98,11 @@ class Folder < ApplicationRecord
 
   # Class methods
   def self.with_image(image_id)
-    where("? = ANY(image_ids)", image_id)
+    where_json_array_includes(:image_ids, image_id)
   end
 
   def self.empty_folders
-    where(image_ids: [])
+    where("json_array_length(image_ids) = 0")
   end
 
   def self.find_by_public_id(public_id)
